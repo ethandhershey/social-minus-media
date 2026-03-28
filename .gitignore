@@ -1,0 +1,36 @@
+# Server only repo
+/frontend/
+
+# Config
+config/local.*
+config/*.local.*
+
+# Custom
+/logs/
+
+# SQLite
+*.db
+*.db-wal
+*.db-shm
+
+# Environment
+!.env
+/.direnv/
+
+# Rust
+/target/
+flamegraph.svg
+perf.data
+perf.data.old
+
+# Editor directories and files
+.vscode/
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

@@ -1,0 +1,30 @@
+[package]
+name = "infra"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+domain          = { workspace = true, features = ["sqlx"] }
+uuid            = { workspace = true }
+time            = { workspace = true }
+serde           = { workspace = true }
+serde_json      = { workspace = true }
+sqlx            = { workspace = true }
+jsonwebtoken    = { workspace = true }
+reqwest         = { workspace = true }
+thiserror       = { workspace = true }
+tokio           = { workspace = true }
+tracing         = { workspace = true }
+anyhow          = { workspace = true }
+derive_more     = { workspace = true }
+hmac            = { workspace = true }
+sha2            = { workspace = true }
+hex             = { workspace = true }
+subtle          = { workspace = true }
+secrecy         = { workspace = true }
+schemars        = { workspace = true }
+resend-rs       = { workspace = true }
+
+[dev-dependencies]
+domain  = { workspace = true, features = ["test-utils"] }
+tokio   = { workspace = true }

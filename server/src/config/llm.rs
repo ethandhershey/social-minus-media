@@ -1,0 +1,70 @@
+use super::EnvOr;
+use anyhow::Result;
+use infra::ai::llm::{ModelConfig, ModelParameters, Provider};
+use secrecy::SecretString;
+use serde::Deserialize;
+use std::collections::HashMap;
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+pub(super) struct RawLlmConfig {
+    providers: HashMap<String, RawProvider>,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RawProvider {
+    base_url: EnvOr<String>,
+    key: Option<EnvOr<SecretString>>,
+    models: HashMap<String, RawModel>,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RawModel {
+    #[serde(default)]
+    max_tokens: Option<EnvOr<u32>>,
+    #[serde(default)]
+    temperature: Option<EnvOr<f32>>,
+}
+
+impl RawLlmConfig {
+    pub(super) fn into_config(self) -> Result<LlmConfig> {
+        let mut providers = HashMap::new();
+        let mut models = HashMap::new();
+
+        for (provider_name, provider) in self.providers {
+            let api_key = provider.key.map(|k| k.resolve_secret()).transpose()?;
+
+            providers.insert(
+                provider_name.clone(),
+                Provider {
+                    base_url: provider.base_url.resolve()?,
+                    api_key,
+                },
+            );
+
+            for (model_name, model) in provider.models {
+                models.insert(
+                    format!("{provider_name}:{model_name}"),
+                    ModelConfig {
+                        provider_name: provider_name.clone(),
+                        params: ModelParameters {
+                            max_tokens: model.max_tokens.map(|v| v.resolve()).transpose()?,
+                            temperature: model.temperature.map(|v| v.resolve()).transpose()?,
+                            ..Default::default()
+                        },
+                    },
+                );
+            }
+        }
+
+        Ok(LlmConfig { providers, models })
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct LlmConfig {
+    pub providers: HashMap<String, Provider>,
+    pub models: HashMap<String, ModelConfig>,
+}
