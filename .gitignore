@@ -1,6 +1,3 @@
-# Server only repo
-/frontend/
-
 # Config
 config/local.*
 config/*.local.*
