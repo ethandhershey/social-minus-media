@@ -1,0 +1,112 @@
+.page {
+    --cream: #f5f0e6;
+    --green: #7dae8a;
+    --green-hover: #6a9878;
+    --blue-muted: #6b8fad;
+    --text: #2c2a26;
+    --text-muted: #5c574f;
+  
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: clamp(1.5rem, 4vw, 2.5rem);
+    font-family: var(--font-geist-sans), system-ui, sans-serif;
+    background: var(--cream);
+    color: var(--text);
+  }
+  
+  .main {
+    width: 100%;
+    max-width: 32rem;
+  }
+  
+  .card {
+    background: #fff;
+    border: 1px solid color-mix(in srgb, var(--blue-muted) 28%, transparent);
+    border-radius: 1rem;
+    padding: clamp(1.5rem, 4vw, 2rem);
+    box-shadow: 0 8px 32px color-mix(in srgb, var(--blue-muted) 12%, transparent);
+  }
+  
+  .heading {
+    font-size: clamp(1.25rem, 3vw, 1.5rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.75rem;
+  }
+  
+  .hint {
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: var(--text-muted);
+    margin-bottom: 1.25rem;
+  }
+  
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--blue-muted);
+  }
+  
+  .textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    font-family: inherit;
+    border-radius: 0.75rem;
+    border: 1px solid color-mix(in srgb, var(--blue-muted) 35%, transparent);
+    background: var(--cream);
+    color: var(--text);
+    resize: vertical;
+    min-height: 10rem;
+  }
+  
+  .textarea:focus {
+    outline: none;
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--green) 25%, transparent);
+  }
+  
+  .textarea::placeholder {
+    color: color-mix(in srgb, var(--text-muted) 65%, transparent);
+  }
+  
+  .submit {
+    margin-top: 0.75rem;
+    align-self: flex-start;
+    padding: 0.6rem 1.35rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    font-family: inherit;
+    color: #fff;
+    background: var(--green);
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+  
+  .submit:hover {
+    background: var(--green-hover);
+  }
+  
+  .submit:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--green) 35%, transparent);
+  }
+  
+  .success {
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: var(--text-muted);
+    padding: 0.75rem 0;
+  }
