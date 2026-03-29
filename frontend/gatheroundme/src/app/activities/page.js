@@ -11,6 +11,7 @@ const INITIAL_ACTIVITIES = [
     id: "1",
     title: "Saturday morning coffee & walk",
     location: "Riverside Park, north entrance",
+    eventDate: "2026-04-04T10:00",
     description:
       "Casual coffee to-go and a slow lap around the loop. Small group; we mostly chat about nothing serious. No pressure to stay the whole time—drop in when you can.",
     distanceMiles: 1.2,
@@ -20,6 +21,7 @@ const INITIAL_ACTIVITIES = [
     id: "2",
     title: "Board games at the library",
     location: "Main St. Public Library, community room",
+    eventDate: "2026-04-07T18:30",
     description: "Medium-weight games; beginners welcome.",
     distanceMiles: 4.8,
     alignmentScore: 0.72,
@@ -28,6 +30,7 @@ const INITIAL_ACTIVITIES = [
     id: "3",
     title: "Easy hike — under 3 miles",
     location: "Trailhead: Quarry Rd lot",
+    eventDate: "2026-04-11T09:00",
     description:
       "Early-ish start, steady pace, lots of breaks. Bringing snacks to share at the overlook if the weather cooperates.",
     distanceMiles: 12.0,
@@ -37,6 +40,19 @@ const INITIAL_ACTIVITIES = [
 
 function emptyRsvpMap(activities) {
   return Object.fromEntries(activities.map((a) => [a.id, null]));
+}
+
+// Helper to format the date for display
+function formatEventDate(dateStr) {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
 }
 
 export default function ActivitiesPage() {
@@ -50,6 +66,7 @@ export default function ActivitiesPage() {
   const [addOpen, setAddOpen] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newLocation, setNewLocation] = useState("");
+  const [newDate, setNewDate] = useState("");
   const [newDescription, setNewDescription] = useState("");
 
   const filterRef = useRef(null);
@@ -58,6 +75,7 @@ export default function ActivitiesPage() {
     setAddOpen(false);
     setNewTitle("");
     setNewLocation("");
+    setNewDate("");
     setNewDescription("");
   }, []);
 
@@ -105,40 +123,26 @@ export default function ActivitiesPage() {
 
   function submitRsvp(activityId, response) {
     setRsvpById((prev) => ({ ...prev, [activityId]: response }));
-    // await fetch(`/api/activities/${activityId}/rsvp`, {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({ response }),
-    // });
   }
 
   function submitNewActivity(e) {
     e.preventDefault();
     const title = newTitle.trim();
     const location = newLocation.trim();
+    const eventDate = newDate;
     const description = newDescription.trim();
-    if (!title || !location || !description) return;
+    if (!title || !location || !eventDate || !description) return;
 
     const id =
       typeof crypto !== "undefined" && crypto.randomUUID
         ? crypto.randomUUID()
         : `local-${Date.now()}`;
 
-    // POST /api/activities
-    // Content-Type: application/json
-    // Body: { title, location, description }
-    // Optional: lat/lng if you geocode client-side or collect from a map picker.
-    // Response: created row including id, distanceMiles, alignmentScore from server.
-    // await fetch("/api/activities", {
-    //   method: "POST",
-    //   headers: { "Content-Type": "application/json" },
-    //   body: JSON.stringify({ title, location, description }),
-    // });
-
     const optimistic = {
       id,
       title,
       location,
+      eventDate,
       description,
       distanceMiles: 0,
       alignmentScore: 1,
@@ -154,7 +158,7 @@ export default function ActivitiesPage() {
         <div className={styles.topLead}>
           <div className={styles.brand}>
             <Link className={styles.brandLink} href="/">
-            <img
+              <img
                 src="/campfirelogo512.png"
                 alt="campfire logo"
                 style={{
@@ -232,9 +236,6 @@ export default function ActivitiesPage() {
                     <option value="25">25 mi</option>
                     <option value="50">50 mi</option>
                   </select>
-                  <p className={styles.filterHint}>
-                    Placeholder until user location is wired up.
-                  </p>
                 </div>
                 <div className={styles.filterField}>
                   <p className={styles.filterPanelTitle}>Alignment</p>
@@ -326,6 +327,19 @@ export default function ActivitiesPage() {
                 />
               </div>
               <div className={styles.modalField}>
+                <label className={styles.modalLabel} htmlFor="new-activity-date">
+                  Date & Time
+                </label>
+                <input
+                  id="new-activity-date"
+                  type="datetime-local"
+                  className={styles.modalInput}
+                  value={newDate}
+                  onChange={(e) => setNewDate(e.target.value)}
+                  required
+                />
+              </div>
+              <div className={styles.modalField}>
                 <label
                   className={styles.modalLabel}
                   htmlFor="new-activity-description"
@@ -370,6 +384,7 @@ export default function ActivitiesPage() {
                   <article className={styles.card}>
                     <h2 className={styles.cardTitle}>{a.title}</h2>
                     <p className={styles.cardLocation}>{a.location}</p>
+                    <p className={styles.cardDate}>{formatEventDate(a.eventDate)}</p>
                     <div className={styles.meta}>
                       <span>
                         <strong>{a.distanceMiles.toFixed(1)}</strong> mi away
@@ -458,46 +473,8 @@ function CardDescription({ description, previewChars, styles: s }) {
   );
 }
 
-function FilterIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        fill="currentColor"
-        d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"
-      />
-    </svg>
-  );
-}
-
-function ProfileIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        fill="currentColor"
-        d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
-      />
-    </svg>
-  );
-}
-
-function CheckIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        fill="currentColor"
-        d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"
-      />
-    </svg>
-  );
-}
-
-function XIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        fill="currentColor"
-        d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"
-      />
-    </svg>
-  );
-}
+// Icons remain the same as provided...
+function FilterIcon() { return <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z" /></svg>; }
+function ProfileIcon() { return <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" /></svg>; }
+function CheckIcon() { return <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" /></svg>; }
+function XIcon() { return <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" /></svg>; }

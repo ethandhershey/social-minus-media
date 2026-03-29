@@ -540,3 +540,27 @@
       display: inline;
     }
   }
+
+  /* Add this class for the date on the card */
+.cardDate {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+  background: color-mix(in srgb, var(--green) 12%, transparent);
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 0.5rem;
+}
+
+/* Ensure datetime-local input looks like other inputs */
+input[type="datetime-local"].modalInput {
+  appearance: none;
+  -webkit-appearance: none;
+  min-height: 44px; /* Better touch target for mobile */
+}
+
+/* Adjusting the meta section for better spacing with the date */
+.meta {
+  margin-top: 0.25rem;
+}
