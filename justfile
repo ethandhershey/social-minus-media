@@ -13,10 +13,15 @@ test:
     cargo test --workspace --features domain/test-utils
 
 fmt:
-    cargo +nightly fmt --all
+    cargo fmt --all
 
 test-all:
     cargo test --workspace --features application/test-utils
+
+build-cross:
+    nix --extra-experimental-features 'nix-command flakes' develop .#cross --command \
+        env SQLX_OFFLINE=true \
+        cargo build --release --target aarch64-unknown-linux-musl
 
 flamegraph:
     cargo flamegraph --package server --profile release-debug

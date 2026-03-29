@@ -34,10 +34,7 @@ pub async fn create_event(
     repo.upsert(&event).await
 }
 
-pub async fn get_event(
-    repo: &impl EventRepository,
-    event_id: Uuid,
-) -> Result<Event, DomainError> {
+pub async fn get_event(repo: &impl EventRepository, event_id: Uuid) -> Result<Event, DomainError> {
     repo.find(event_id).await
 }
 

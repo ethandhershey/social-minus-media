@@ -1,0 +1,72 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO user_interests (id, user_id, messages, summary, embedding)\n               VALUES ($1, $2, $3, $4, $5)\n               ON CONFLICT(id) DO UPDATE SET\n                   messages   = EXCLUDED.messages,\n                   summary    = EXCLUDED.summary,\n                   embedding  = EXCLUDED.embedding,\n                   updated_at = NOW()\n               RETURNING id         as \"id: Uuid\",\n                         user_id    as \"user_id: Uuid\",\n                         messages   as \"messages: serde_json::Value\",\n                         summary,\n                         embedding  as \"embedding: pgvector::Vector\",\n                         created_at as \"created_at: time::OffsetDateTime\",\n                         updated_at as \"updated_at: time::OffsetDateTime\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id: Uuid",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "user_id: Uuid",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "messages: serde_json::Value",
+        "type_info": "Jsonb"
+      },
+      {
+        "ordinal": 3,
+        "name": "summary",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "embedding: pgvector::Vector",
+        "type_info": {
+          "Custom": {
+            "name": "vector",
+            "kind": "Simple"
+          }
+        }
+      },
+      {
+        "ordinal": 5,
+        "name": "created_at: time::OffsetDateTime",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 6,
+        "name": "updated_at: time::OffsetDateTime",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Jsonb",
+        "Text",
+        {
+          "Custom": {
+            "name": "vector",
+            "kind": "Simple"
+          }
+        }
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      false,
+      false
+    ]
+  },
+  "hash": "1adca0c2b5577ba92fb6501c1b57bf055922cbcfb13b38ca5c06338ba4755d46"
+}

@@ -19,7 +19,28 @@ pub trait UserRepository: Send + Sync {
     async fn find_by_sub(&self, user_sub: &str) -> Result<User, DomainError>;
     async fn upsert(&self, user: &AuthUser) -> Result<User, DomainError>;
     async fn find_by_billing_customer_id(&self, customer_id: &str) -> Result<User, DomainError>;
-    async fn find_nearby(&self, lat: f64, lon: f64, radius_meters: f64) -> Result<Vec<User>, DomainError>;
+    async fn find_nearby(
+        &self,
+        lat: f64,
+        lon: f64,
+        radius_meters: f64,
+    ) -> Result<Vec<User>, DomainError>;
+    async fn find_nearby_by_interests(
+        &self,
+        lat: f64,
+        lon: f64,
+        radius_meters: f64,
+        embedding: &[f32],
+    ) -> Result<Vec<User>, DomainError>;
+    async fn update_profile(
+        &self,
+        user_id: Uuid,
+        avatar_url: Option<String>,
+        bio: Option<String>,
+        city: Option<String>,
+        latitude: Option<f64>,
+        longitude: Option<f64>,
+    ) -> Result<User, DomainError>;
     async fn update_subscription(
         &self,
         user_id: Uuid,
@@ -108,6 +129,8 @@ pub trait RsvpRepository: Send + Sync {
 pub trait UserInterestsRepository: Send + Sync {
     async fn find_by_user(&self, user_id: Uuid) -> Result<Option<UserInterests>, DomainError>;
     async fn upsert(&self, interests: &UserInterests) -> Result<UserInterests, DomainError>;
+    fn get_summary_model(&self) -> &str;
+    fn get_embed_model(&self) -> &str;
 }
 
 #[trait_variant::make(Send)]

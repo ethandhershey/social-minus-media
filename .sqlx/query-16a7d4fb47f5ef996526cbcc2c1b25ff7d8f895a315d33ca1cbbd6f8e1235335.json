@@ -1,0 +1,58 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT id as \"id: Uuid\", user_id as \"user_id: Uuid\", name, brand,\n                      created_at  as \"created_at: time::OffsetDateTime\",\n                      updated_at  as \"updated_at: time::OffsetDateTime\",\n                      archived_at as \"archived_at: time::OffsetDateTime\"\n               FROM products WHERE id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id: Uuid",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "user_id: Uuid",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "brand",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "created_at: time::OffsetDateTime",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 5,
+        "name": "updated_at: time::OffsetDateTime",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 6,
+        "name": "archived_at: time::OffsetDateTime",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "16a7d4fb47f5ef996526cbcc2c1b25ff7d8f895a315d33ca1cbbd6f8e1235335"
+}

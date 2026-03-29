@@ -1,11 +1,11 @@
 pub mod crud;
 
-use serde::{Deserialize, Serialize};
+use serde::Deserialize;
 use serde_json::Value;
 use time::{OffsetDateTime, serde::rfc3339};
 use uuid::Uuid;
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct UserInterests {
     pub id: Uuid,
     pub user_id: Uuid,

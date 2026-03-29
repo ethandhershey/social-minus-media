@@ -13,7 +13,7 @@ pub struct AuthUser {
     pub display_name: String,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Deserialize)]
 pub struct User {
     pub id: Uuid,
     pub sub: String,

@@ -1,6 +1,6 @@
 use super::EnvOr;
 use anyhow::Result;
-use infra::ai::llm::{ModelConfig, ModelParameters, Provider};
+use infra::llm::{EmbedModelConfig, ModelConfig, ModelParameters, Provider};
 use secrecy::SecretString;
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -24,7 +24,10 @@ struct RawInterestsModels {
 struct RawProvider {
     base_url: EnvOr<String>,
     key: Option<EnvOr<SecretString>>,
+    #[serde(default)]
     models: HashMap<String, RawModel>,
+    #[serde(default)]
+    embed_models: Vec<String>,
 }
 
 #[derive(Deserialize)]
@@ -40,6 +43,7 @@ impl RawLlmConfig {
     pub(super) fn into_config(self) -> Result<LlmConfig> {
         let mut providers = HashMap::new();
         let mut models = HashMap::new();
+        let mut embed_models = HashMap::new();
 
         for (provider_name, provider) in self.providers {
             let api_key = provider.key.map(|k| k.resolve_secret()).transpose()?;
@@ -65,11 +69,21 @@ impl RawLlmConfig {
                     },
                 );
             }
+
+            for model_name in provider.embed_models {
+                embed_models.insert(
+                    format!("{provider_name}:{model_name}"),
+                    EmbedModelConfig {
+                        provider_name: provider_name.clone(),
+                    },
+                );
+            }
         }
 
         Ok(LlmConfig {
             providers,
             models,
+            embed_models,
             interests_summary_model: self.interests.summary_model,
             interests_embed_model: self.interests.embed_model,
         })
@@ -80,6 +94,7 @@ impl RawLlmConfig {
 pub struct LlmConfig {
     pub providers: HashMap<String, Provider>,
     pub models: HashMap<String, ModelConfig>,
+    pub embed_models: HashMap<String, EmbedModelConfig>,
     pub interests_summary_model: String,
     pub interests_embed_model: String,
 }

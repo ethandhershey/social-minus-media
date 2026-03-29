@@ -1,0 +1,40 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT user_id    as \"user_id: Uuid\",\n                      event_id   as \"event_id: Uuid\",\n                      status     as \"status: RsvpStatus\",\n                      created_at as \"created_at: time::OffsetDateTime\"\n               FROM rsvps WHERE user_id = $1",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "user_id: Uuid",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "event_id: Uuid",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "status: RsvpStatus",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "created_at: time::OffsetDateTime",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false
+    ]
+  },
+  "hash": "ef3516779fcd85eed59876f3aa1ac51b576fab3df1484e00b694fbcdd8ce1ac8"
+}

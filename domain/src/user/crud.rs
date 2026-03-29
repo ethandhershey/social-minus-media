@@ -1,9 +1,10 @@
+use uuid::Uuid;
+
 use crate::{
     error::DomainError,
+    ports::{UserInterestsRepository, UserRepository},
     user::{AuthUser, User},
 };
-
-use crate::ports::UserRepository;
 
 /// Gets the user profile, upserting on first access or when identity data changes.
 pub async fn get_or_upsert_user(
@@ -21,6 +22,53 @@ pub async fn get_or_upsert_user(
         Err(DomainError::NotFound) => repo.upsert(user).await,
         Err(e) => Err(e),
     }
+}
+
+pub async fn get_user(repo: &impl UserRepository, user_id: Uuid) -> Result<User, DomainError> {
+    repo.find_by_id(user_id).await
+}
+
+pub async fn update_profile(
+    repo: &impl UserRepository,
+    user_id: Uuid,
+    avatar_url: Option<String>,
+    bio: Option<String>,
+    city: Option<String>,
+    latitude: Option<f64>,
+    longitude: Option<f64>,
+) -> Result<User, DomainError> {
+    repo.update_profile(user_id, avatar_url, bio, city, latitude, longitude)
+        .await
+}
+
+pub async fn find_nearby_users(
+    repo: &impl UserRepository,
+    user_id: Uuid,
+    lat: f64,
+    lon: f64,
+    radius_meters: f64,
+) -> Result<Vec<User>, DomainError> {
+    let users = repo.find_nearby(lat, lon, radius_meters).await?;
+    Ok(users.into_iter().filter(|u| u.id != user_id).collect())
+}
+
+pub async fn find_nearby_by_interests(
+    user_repo: &impl UserRepository,
+    interests_repo: &impl UserInterestsRepository,
+    user_id: Uuid,
+    lat: f64,
+    lon: f64,
+    radius_meters: f64,
+) -> Result<Vec<User>, DomainError> {
+    let embedding = interests_repo
+        .find_by_user(user_id)
+        .await?
+        .and_then(|i| i.embedding)
+        .ok_or_else(|| DomainError::InvalidInput("no interest embedding found".into()))?;
+
+    user_repo
+        .find_nearby_by_interests(lat, lon, radius_meters, &embedding)
+        .await
 }
 
 #[cfg(test)]

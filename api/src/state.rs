@@ -4,13 +4,8 @@ use domain::ports::{
     Authenticator, BillingService, EntitlementService, EventRepository, LlmService, MailService,
     ProductRepository, RsvpRepository, UserInterestsRepository, UserRepository,
 };
+use serde::Serialize;
 use std::sync::Arc;
-
-#[derive(Debug, Clone)]
-pub struct InterestsConfig {
-    pub summary_model: String,
-    pub embed_model: String,
-}
 
 // ── Service bundle ────────────────────────────────────────────────────────────
 
@@ -59,7 +54,11 @@ state_wrapper!(UserRepoState, UserRepo, user_repo);
 state_wrapper!(ProductRepoState, ProductRepo, product_repo);
 state_wrapper!(EventRepoState, EventRepo, event_repo);
 state_wrapper!(RsvpRepoState, RsvpRepo, rsvp_repo);
-state_wrapper!(UserInterestsRepoState, UserInterestsRepo, user_interests_repo);
+state_wrapper!(
+    UserInterestsRepoState,
+    UserInterestsRepo,
+    user_interests_repo
+);
 state_wrapper!(LlmState, Llm, llm);
 state_wrapper!(BillingState, Billing, billing);
 state_wrapper!(MailState, Mail, mail);
@@ -69,6 +68,7 @@ state_wrapper!(EntitlementState, Entitlement, entitlement);
 
 #[derive(Clone)]
 pub struct AppState<S: AppServices> {
+    public_config: PublicConfig,
     auth: AuthenticatorState<S>,
     user_repo: UserRepoState<S>,
     product_repo: ProductRepoState<S>,
@@ -79,17 +79,11 @@ pub struct AppState<S: AppServices> {
     billing: BillingState<S>,
     mail: MailState<S>,
     entitlement: EntitlementState<S>,
-    interests_config: Arc<InterestsConfig>,
-}
-
-impl<S: AppServices> FromRef<AppState<S>> for Arc<InterestsConfig> {
-    fn from_ref(state: &AppState<S>) -> Self {
-        Arc::clone(&state.interests_config)
-    }
 }
 
 impl<S: AppServices> AppState<S> {
     pub fn new(
+        public_config: PublicConfig,
         auth: S::Auth,
         user_repo: S::UserRepo,
         product_repo: S::ProductRepo,
@@ -100,9 +94,9 @@ impl<S: AppServices> AppState<S> {
         billing: S::Billing,
         mail: S::Mail,
         entitlement: S::Entitlement,
-        interests_config: InterestsConfig,
     ) -> Self {
         Self {
+            public_config,
             auth: AuthenticatorState::new(auth),
             user_repo: UserRepoState::new(user_repo),
             product_repo: ProductRepoState::new(product_repo),
@@ -113,7 +107,21 @@ impl<S: AppServices> AppState<S> {
             billing: BillingState::new(billing),
             mail: MailState::new(mail),
             entitlement: EntitlementState::new(entitlement),
-            interests_config: Arc::new(interests_config),
         }
+    }
+}
+
+// ── AppConfig ─────────────────────────────────────────────────────────────────
+
+#[derive(Clone, Serialize)]
+pub struct PublicConfig {
+    pub version: &'static str,
+    pub auth_client_id: String,
+    pub auth_issuer: String,
+}
+
+impl<S: AppServices> FromRef<AppState<S>> for PublicConfig {
+    fn from_ref(state: &AppState<S>) -> Self {
+        state.public_config.clone()
     }
 }

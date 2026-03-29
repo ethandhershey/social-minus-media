@@ -1,0 +1,15 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "DELETE FROM rsvps WHERE user_id = $1 AND event_id = $2",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "ab8397013024cc88c938db002d0b3eeb4ca57dc97c17d7ae72ba81c75507785e"
+}

@@ -9,11 +9,10 @@ logs/
 *.db
 *.db-wal
 *.db-shm
-
 .postgres/
 
 # Environment
-!.env
+.env
 .direnv/
 
 # Rust

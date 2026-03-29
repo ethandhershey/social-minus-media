@@ -1,0 +1,17 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO products (id, user_id, name, brand)\n               VALUES ($1, $2, $3, $4)\n               ON CONFLICT(id) DO UPDATE SET\n                   name        = EXCLUDED.name,\n                   brand       = EXCLUDED.brand,\n                   archived_at = EXCLUDED.archived_at,\n                   updated_at  = NOW()",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Text",
+        "Text"
+      ]
+    },
+    "nullable": []
+  },
+  "hash": "984f43651559635322c42a17ee4ea69e829b624e4326c95be480abe7b0f276a7"
+}

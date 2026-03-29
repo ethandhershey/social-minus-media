@@ -7,11 +7,17 @@ use uuid::Uuid;
 
 pub struct PgUserInterestsRepository {
     pool: PgPool,
+    summary_model: String,
+    embed_model: String,
 }
 
 impl PgUserInterestsRepository {
-    pub fn new(pool: PgPool) -> Self {
-        Self { pool }
+    pub fn new(pool: PgPool, summary_model: String, embed_model: String) -> Self {
+        Self {
+            pool,
+            summary_model,
+            embed_model,
+        }
     }
 }
 
@@ -91,5 +97,13 @@ impl UserInterestsRepository for PgUserInterestsRepository {
         .await
         .map_err(|_| DomainError::Internal(anyhow!("failed to upsert user interests")))
         .map(Into::into)
+    }
+
+    fn get_summary_model(&self) -> &str {
+        &self.summary_model
+    }
+
+    fn get_embed_model(&self) -> &str {
+        &self.embed_model
     }
 }

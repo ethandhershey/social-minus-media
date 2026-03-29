@@ -15,7 +15,6 @@ use tower_http::{
 
 pub fn create_router<S: AppServices>(
     state: AppState<S>,
-    build_id: &'static str,
     frontend_dir: impl AsRef<Path>,
     allowed_origins: Vec<HeaderValue>,
     max_upload_size: usize,
@@ -34,7 +33,7 @@ pub fn create_router<S: AppServices>(
         ])
         .allow_credentials(true);
 
-    let api = handlers::simple::router(build_id)
+    let api = handlers::simple::router()
         .merge(handlers::user::router())
         .merge(handlers::product::router())
         .merge(handlers::event::router())

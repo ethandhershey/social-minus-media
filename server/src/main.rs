@@ -11,10 +11,8 @@ use infra::{
     entitlment::ConfigEntitlementService,
     mail::ResendMailClient,
     postgres::{
-        event_repo::PgEventRepository,
-        product_repo::PgProductRepository,
-        rsvp_repo::PgRsvpRepository,
-        user_interests_repo::PgUserInterestsRepository,
+        event_repo::PgEventRepository, product_repo::PgProductRepository,
+        rsvp_repo::PgRsvpRepository, user_interests_repo::PgUserInterestsRepository,
         user_repo::PgUserRepository,
     },
     stripe::StripeClient,
@@ -83,10 +81,11 @@ async fn main() -> Result<()> {
     .context("failed to initialise JWT validator")?;
 
     #[cfg(not(feature = "fake-ai"))]
-    let ai = infra::ai::llm::SimpleLlmClient::new(
+    let ai = infra::llm::SimpleLlmClient::new(
         http_client.clone(),
         config.llm.providers,
         config.llm.models,
+        config.llm.embed_models,
     );
     #[cfg(feature = "fake-ai")]
     let ai = domain::test_utils::fake_ai_service::FakeAiService::new();
@@ -95,7 +94,11 @@ async fn main() -> Result<()> {
     let product_repo = PgProductRepository::new(pool.clone());
     let event_repo = PgEventRepository::new(pool.clone());
     let rsvp_repo = PgRsvpRepository::new(pool.clone());
-    let user_interests_repo = PgUserInterestsRepository::new(pool.clone());
+    let user_interests_repo = PgUserInterestsRepository::new(
+        pool.clone(),
+        config.llm.interests_summary_model,
+        config.llm.interests_embed_model,
+    );
 
     let stripe = StripeClient::new(
         http_client.clone(),
@@ -117,6 +120,12 @@ async fn main() -> Result<()> {
 
     let entitlment = ConfigEntitlementService::new(config.tiers.into());
 
+    let public_config = api::state::PublicConfig {
+        version: BUILD_ID,
+        auth_client_id: config.zitadel.client_id,
+        auth_issuer: config.zitadel.issuer,
+    };
+
     // ── State ────────────────────────────────────────────────────────────────
     #[derive(Clone)]
     struct Services;
@@ -129,20 +138,16 @@ async fn main() -> Result<()> {
         type RsvpRepo = PgRsvpRepository;
         type UserInterestsRepo = PgUserInterestsRepository;
         #[cfg(not(feature = "fake-ai"))]
-        type Llm = infra::ai::llm::SimpleLlmClient;
+        type Llm = infra::llm::SimpleLlmClient;
         #[cfg(feature = "fake-ai")]
-        type Ai = domain::test_utils::fake_ai_service::FakeAiService;
+        type Llm = domain::test_utils::fake_ai_service::FakeAiService;
         type Billing = StripeClient;
         type Mail = ResendMailClient;
         type Entitlement = ConfigEntitlementService;
     }
 
-    let interests_config = api::state::InterestsConfig {
-        summary_model: config.llm.interests_summary_model,
-        embed_model: config.llm.interests_embed_model,
-    };
-
     let state = AppState::<Services>::new(
+        public_config,
         validator,
         user_repo,
         product_repo,
@@ -153,13 +158,11 @@ async fn main() -> Result<()> {
         stripe,
         mail,
         entitlment,
-        interests_config,
     );
 
     // ── Router ───────────────────────────────────────────────────────────────
     let app = create_router(
         state,
-        BUILD_ID,
         config.server.frontend_dir,
         config.server.allowed_origins,
         config.server.max_upload_size,
