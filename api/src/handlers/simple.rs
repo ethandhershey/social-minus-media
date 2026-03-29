@@ -1,9 +1,13 @@
 use axum::{
     Json, Router,
+    extract::State,
     http::StatusCode,
-    routing::{MethodRouter, any, get},
+    response::IntoResponse,
+    routing::{any, get},
 };
 use serde::Serialize;
+
+use axum::extract::FromRef;
 
 pub fn root_router<S: Clone + Send + Sync + 'static>() -> Router<S> {
     Router::new()
@@ -12,10 +16,14 @@ pub fn root_router<S: Clone + Send + Sync + 'static>() -> Router<S> {
         .route("/status", any(health_check))
 }
 
-pub fn router<S: Clone + Send + Sync + 'static>(build_id: &'static str) -> Router<S> {
+pub fn router<S: Clone + Send + Sync + 'static>() -> Router<S>
+where
+    crate::state::PublicConfig: FromRef<S>,
+{
     Router::new()
         .route("/health", any(health_check))
-        .route("/version", version_handler(build_id))
+        .route("/version", get(version))
+        .route("/config", get(public_config))
 }
 
 #[cfg(debug_assertions)]
@@ -32,9 +40,14 @@ struct VersionResponse {
     version: &'static str,
 }
 
-fn version_handler<S>(build_id: &'static str) -> MethodRouter<S>
-where
-    S: Clone + Send + Sync + 'static,
-{
-    get(move || async move { Json(VersionResponse { version: build_id }) })
+async fn version(State(public_config): State<crate::state::PublicConfig>) -> impl IntoResponse {
+    Json(VersionResponse {
+        version: public_config.version,
+    })
+}
+
+async fn public_config(
+    State(public_config): State<crate::state::PublicConfig>,
+) -> impl IntoResponse {
+    Json(public_config)
 }

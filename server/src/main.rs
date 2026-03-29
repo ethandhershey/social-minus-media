@@ -120,6 +120,12 @@ async fn main() -> Result<()> {
 
     let entitlment = ConfigEntitlementService::new(config.tiers.into());
 
+    let public_config = api::state::PublicConfig {
+        version: BUILD_ID,
+        auth_client_id: config.zitadel.client_id,
+        auth_issuer: config.zitadel.issuer,
+    };
+
     // ── State ────────────────────────────────────────────────────────────────
     #[derive(Clone)]
     struct Services;
@@ -141,6 +147,7 @@ async fn main() -> Result<()> {
     }
 
     let state = AppState::<Services>::new(
+        public_config,
         validator,
         user_repo,
         product_repo,
@@ -156,7 +163,6 @@ async fn main() -> Result<()> {
     // ── Router ───────────────────────────────────────────────────────────────
     let app = create_router(
         state,
-        BUILD_ID,
         config.server.frontend_dir,
         config.server.allowed_origins,
         config.server.max_upload_size,
