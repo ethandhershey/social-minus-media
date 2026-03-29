@@ -28,8 +28,7 @@ export default function AlignmentPage() {
         <div className={styles.card}>
           <h1 className={styles.heading}>What activities are you into?</h1>
           <p className={styles.hint}>
-            Write a paragraph about the kinds of things you like to do with
-            others. This helps others understand your vibe before they RSVP.
+            Write a paragraph about the kinds of things you like to do. This helps us suggest activities that you'd actually be interested in.
           </p>
 
           {submitted ? (
@@ -47,7 +46,7 @@ export default function AlignmentPage() {
                 className={styles.textarea}
                 name="activities"
                 rows={8}
-                placeholder="e.g. I like low-key board game nights, weekend hikes before noon, and trying new coffee shops with a small group..."
+                placeholder="e.g. I like chill board game nights, weekend hikes before noon, and trying new coffee shops with a small group..."
                 value={activities}
                 onChange={(e) => setActivities(e.target.value)}
                 required

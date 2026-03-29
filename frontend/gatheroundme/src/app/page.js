@@ -5,7 +5,7 @@ export default function Home() {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <span className={styles.brand}>Gatheround</span>
+        <span className={styles.brand}>GatheRound</span>
         <nav className={styles.nav}>
           <Link className={styles.btnGhost} href="/login">
             Log in
@@ -17,13 +17,13 @@ export default function Home() {
       </header>
       <main className={styles.main}>
         <section className={styles.hero}>
-          <p className={styles.eyebrow}>Anti–social media, pro–real life</p>
+          <p className={styles.eyebrow}>Anti-social media, pro-real life</p>
           <h1 className={styles.title}>
             Post what you want to do. Find people who want to do it with you.
           </h1>
           <p className={styles.lede}>
-            Share activities you actually want to show up for—not endless feeds.
-            Others can RSVP and meet you in the world, not just in the comments.
+            Share activities you actually want to show up for - not endless feeds.
+            Others can RSVP and meet you in real life, not just in the comments.
           </p>
         </section>
         <section className={styles.how} aria-labelledby="how-heading">
@@ -34,10 +34,10 @@ export default function Home() {
             <li className={styles.step}>
               <span className={styles.stepNum}>1</span>
               <div>
-                <h3 className={styles.stepTitle}>Tell us your vibe</h3>
+                <h3 className={styles.stepTitle}>Tell us about yourself</h3>
                 <p className={styles.stepText}>
-                  Write a short paragraph about you and the kinds of activities
-                  you care about. That becomes the signal for who you match with.
+                  Write a short paragraph about yourself and the kinds of activities
+                  you care about. This helps us suggest user-posted activities that align with your interests.
                 </p>
               </div>
             </li>
@@ -46,8 +46,8 @@ export default function Home() {
               <div>
                 <h3 className={styles.stepTitle}>Post real activities</h3>
                 <p className={styles.stepText}>
-                  Share something you want to do with others—a walk, a game night,
-                  a hike. No algorithmic noise, just intent.
+                  Share something you want to do with others: a hike, a game night,
+                  even an extremely niche activity. No algorithmic noise, just intent.
                 </p>
               </div>
             </li>
@@ -56,7 +56,7 @@ export default function Home() {
               <div>
                 <h3 className={styles.stepTitle}>RSVP &amp; show up</h3>
                 <p className={styles.stepText}>
-                  People who resonate with your profile can join your plans. You
+                  People who have similar interests can RSVP and meet up with you in real life. You
                   coordinate and meet offline.
                 </p>
               </div>
@@ -65,7 +65,7 @@ export default function Home() {
         </section>
       </main>
       <footer className={styles.footer}>
-        <p>© {new Date().getFullYear()} Gatheround</p>
+        <p>© {new Date().getFullYear()} GatheRound</p>
       </footer>
     </div>
   );

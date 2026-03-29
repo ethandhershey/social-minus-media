@@ -1,0 +1,146 @@
+.profileMain {
+    max-width: 32rem;
+    margin: 1rem auto;
+    border: 1px solid 
+    color-mix(in srgb, var(--blue-muted), #6b8fad 28%, transparent);
+    box-shadow: 0 8px 32px 
+    color-mix(in srgb, var(--blue-muted), #6b8fad 12%, transparent);
+    background: #fff;
+    border-radius: 1rem;
+    padding: clamp(1.5rem, 4vw, 2rem);
+  }
+  
+  .username {
+    font-size: clamp(1.5rem, 4vw, 1.85rem);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+    word-break: break-word;
+  }
+  
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    
+  }
+  
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  
+  .label {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--blue-muted, #6b8fad);
+  }
+  
+  .input,
+  .textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.65rem 0.85rem;
+    font-size: 1rem;
+    font-family: inherit;
+    line-height: 1.45;
+    border-radius: 0.75rem;
+    border: 1px solid color-mix(in srgb, var(--blue-muted, #6b8fad) 38%, transparent);
+    background: color-mix(in srgb, var(--cream, #f5f0e6) 92%, #fff);
+    color: var(--text, #2c2a26);
+  }
+  
+  .textarea {
+    min-height: 7rem;
+    resize: vertical;
+  }
+  
+  .input:focus,
+  .textarea:focus {
+    outline: none;
+    border-color: var(--green, #7dae8a);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--green, #7dae8a) 22%, transparent);
+  }
+  
+  .hint {
+    font-size: 0.75rem;
+    color: var(--text-muted, #5c574f);
+    line-height: 1.4;
+  }
+  
+  .saveRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    margin-top: 0.25rem;
+  }
+  
+  .saveBtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0.5rem 1.15rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    font-family: inherit;
+    color: #fff;
+    background: var(--green, #7dae8a);
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .saveBtn:hover {
+    background: var(--green-hover, #6a9878);
+  }
+  
+  .saveBtn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--green, #7dae8a) 30%, transparent);
+  }
+  
+  .alignmentBlock {
+    margin-top: 1.75rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid color-mix(in srgb, var(--blue-muted, #6b8fad) 22%, transparent);
+  }
+  
+  .alignmentLabel {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--blue-muted, #6b8fad);
+    margin-bottom: 0.5rem;
+  }
+  
+  .alignmentLink {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0.5rem 1.15rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    font-family: inherit;
+    color: var(--text, #2c2a26);
+    border: 1px solid color-mix(in srgb, var(--blue-muted, #6b8fad) 45%, transparent);
+    border-radius: 999px;
+    text-decoration: none;
+    transition: background 0.15s ease, border-color 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  .alignmentLink:hover {
+    border-color: var(--blue-muted, #6b8fad);
+    background: color-mix(in srgb, var(--blue-muted, #6b8fad) 12%, transparent);
+  }
+  
+  .alignmentLink:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--green, #7dae8a) 28%, transparent);
+  }
