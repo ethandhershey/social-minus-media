@@ -61,9 +61,14 @@ impl UserRepository for FakeUserProfileRepository {
             sub: user.sub.clone(),
             email: user.email.clone(),
             display_name: user.display_name.clone(),
+            avatar_url: None,
+            bio: None,
+            city: None,
+            latitude: None,
+            longitude: None,
             tier: Tier::Free,
-            api_usage: 0u32.into(),
-            storage_usage: 0u32.into(),
+            api_usage: 0i64.into(),
+            storage_usage: 0i64.into(),
             billing_customer_id: None,
             billing_period_start: now,
             created_at: now,
@@ -73,6 +78,15 @@ impl UserRepository for FakeUserProfileRepository {
 
         profiles.insert(profile.id, profile.clone());
         Ok(profile)
+    }
+
+    async fn find_nearby(&self, lat: f64, lon: f64, _radius_meters: f64) -> Result<Vec<User>, DomainError> {
+        let profiles = self.profiles.read().unwrap();
+        Ok(profiles
+            .values()
+            .filter(|p| p.latitude.is_some() && p.longitude.is_some())
+            .cloned()
+            .collect())
     }
 
     async fn find_by_billing_customer_id(&self, customer_id: &str) -> Result<User, DomainError> {

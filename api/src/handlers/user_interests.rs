@@ -1,7 +1,7 @@
 use axum::{
     Json, Router,
     extract::State,
-    routing::{get, put},
+    routing::get,
 };
 use domain::{user::User, user_interests::UserInterests};
 use serde::Deserialize;

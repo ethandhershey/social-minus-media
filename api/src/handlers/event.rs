@@ -2,7 +2,7 @@ use axum::{
     Json, Router,
     extract::{Path, State},
     http::StatusCode,
-    routing::{delete, get, post, put},
+    routing::{get, post},
 };
 use domain::{
     event::Event,
@@ -21,7 +21,10 @@ use crate::{
 pub fn router<S: AppServices>() -> Router<AppState<S>> {
     Router::new()
         .route("/events", get(list_events).post(create_event))
-        .route("/events/{id}", get(get_event).put(update_event).delete(delete_event))
+        .route(
+            "/events/{id}",
+            get(get_event).put(update_event).delete(delete_event),
+        )
         .route("/events/{id}/rsvp", post(set_rsvp).delete(remove_rsvp))
         .route("/events/{id}/rsvps", get(list_rsvps))
         .route("/me/events", get(my_events))
