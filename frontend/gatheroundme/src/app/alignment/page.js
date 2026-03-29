@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import styles from "./alignment.module.css";
+import Link from "next/link";
 
 export default function AlignmentPage() {
   const [activities, setActivities] = useState("");
@@ -51,9 +52,11 @@ export default function AlignmentPage() {
                 onChange={(e) => setActivities(e.target.value)}
                 required
               />
-              <button type="submit" className={styles.submit}>
-                Submit
-              </button>
+              <Link href="/profile">
+                <button type="submit" className={styles.submit}>
+                  Submit
+                </button>
+              </Link>
             </form>
           )}
         </div>

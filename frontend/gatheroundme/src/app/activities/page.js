@@ -13,7 +13,7 @@ const INITIAL_ACTIVITIES = [
     location: "Riverside Park, north entrance",
     eventDate: "2026-04-04T10:00",
     description:
-      "Casual coffee to-go and a slow lap around the loop. Small group; we mostly chat about nothing serious. No pressure to stay the whole time—drop in when you can.",
+      "Casual coffee to-go and a slow lap around the loop. Small group; we mostly chat about nothing serious. No pressure to stay the whole time-drop in when you can.",
     distanceMiles: 1.2,
     alignmentScore: 0.91,
   },
@@ -28,7 +28,7 @@ const INITIAL_ACTIVITIES = [
   },
   {
     id: "3",
-    title: "Easy hike — under 3 miles",
+    title: "Easy hike - under 3 miles",
     location: "Trailhead: Quarry Rd lot",
     eventDate: "2026-04-11T09:00",
     description:
