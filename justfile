@@ -13,7 +13,7 @@ test:
     cargo test --workspace --features domain/test-utils
 
 fmt:
-    cargo +nightly fmt --all
+    cargo fmt --all
 
 test-all:
     cargo test --workspace --features application/test-utils

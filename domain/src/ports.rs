@@ -32,6 +32,15 @@ pub trait UserRepository: Send + Sync {
         radius_meters: f64,
         embedding: &[f32],
     ) -> Result<Vec<User>, DomainError>;
+    async fn update_profile(
+        &self,
+        user_id: Uuid,
+        avatar_url: Option<String>,
+        bio: Option<String>,
+        city: Option<String>,
+        latitude: Option<f64>,
+        longitude: Option<f64>,
+    ) -> Result<User, DomainError>;
     async fn update_subscription(
         &self,
         user_id: Uuid,

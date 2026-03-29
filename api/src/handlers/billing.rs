@@ -108,7 +108,10 @@ async fn webhook<S: AppServices>(
             tier,
         } => {
             tracing::info!(%user_id, %customer_id, ?tier, "checkout completed");
-            match repo.update_subscription(user_id, tier, Some(customer_id)).await {
+            match repo
+                .update_subscription(user_id, tier, Some(customer_id))
+                .await
+            {
                 Ok(()) => {}
                 Err(DomainError::NotFound) => {
                     tracing::warn!(%user_id, "checkout.session.completed for unknown user — ignoring");
@@ -131,7 +134,10 @@ async fn webhook<S: AppServices>(
         BillingEvent::SubscriptionDeleted { customer_id } => {
             tracing::info!(%customer_id, "subscription deleted — downgrading to Free");
             match repo.find_by_billing_customer_id(&customer_id).await {
-                Ok(profile) => repo.update_subscription(profile.id, Tier::Free, None).await?,
+                Ok(profile) => {
+                    repo.update_subscription(profile.id, Tier::Free, None)
+                        .await?
+                }
                 Err(DomainError::NotFound) => {
                     tracing::warn!(%customer_id, "subscription.deleted for unknown customer — ignoring");
                 }

@@ -80,6 +80,25 @@ impl UserRepository for FakeUserProfileRepository {
         Ok(profile)
     }
 
+    async fn update_profile(
+        &self,
+        user_id: Uuid,
+        avatar_url: Option<String>,
+        bio: Option<String>,
+        city: Option<String>,
+        latitude: Option<f64>,
+        longitude: Option<f64>,
+    ) -> Result<User, DomainError> {
+        let mut profiles = self.profiles.write().unwrap();
+        let profile = profiles.get_mut(&user_id).ok_or(DomainError::NotFound)?;
+        profile.avatar_url = avatar_url;
+        profile.bio = bio;
+        profile.city = city;
+        profile.latitude = latitude;
+        profile.longitude = longitude;
+        Ok(profile.clone())
+    }
+
     async fn find_nearby_by_interests(
         &self,
         _lat: f64,
@@ -90,7 +109,12 @@ impl UserRepository for FakeUserProfileRepository {
         Ok(vec![])
     }
 
-    async fn find_nearby(&self, lat: f64, lon: f64, _radius_meters: f64) -> Result<Vec<User>, DomainError> {
+    async fn find_nearby(
+        &self,
+        lat: f64,
+        lon: f64,
+        _radius_meters: f64,
+    ) -> Result<Vec<User>, DomainError> {
         let profiles = self.profiles.read().unwrap();
         Ok(profiles
             .values()

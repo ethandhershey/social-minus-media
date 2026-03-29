@@ -4,11 +4,11 @@ use crate::{
 };
 use axum::{
     Json, Router,
-    extract::{Query, State},
+    extract::{Path, Query, State},
     response::IntoResponse,
     routing::get,
 };
-use domain::{error::DomainError, user::{Tier, User}};
+use domain::user::{Tier, User};
 use serde::{Deserialize, Serialize};
 use time::{OffsetDateTime, serde::rfc3339};
 use uuid::Uuid;
@@ -94,7 +94,8 @@ impl From<User> for PublicUserResponse {
 
 pub fn router<S: AppServices>() -> Router<AppState<S>> {
     Router::new()
-        .route("/profile", get(get_profile))
+        .route("/profile", get(get_profile).put(update_profile))
+        .route("/users/:id", get(get_user))
         .route("/users/nearby", get(nearby_users))
         .route("/users/nearby-by-interests", get(nearby_users_by_interests))
 }
@@ -106,6 +107,42 @@ async fn get_profile(user: User) -> Result<impl IntoResponse, ApiError> {
 }
 
 #[derive(Deserialize)]
+struct UpdateProfileBody {
+    avatar_url: Option<String>,
+    bio: Option<String>,
+    city: Option<String>,
+    latitude: Option<f64>,
+    longitude: Option<f64>,
+}
+
+async fn update_profile<S: AppServices>(
+    user: User,
+    State(user_repo): State<UserRepoState<S>>,
+    Json(body): Json<UpdateProfileBody>,
+) -> Result<Json<PrivateUserResponse>, ApiError> {
+    let updated = domain::user::crud::update_profile(
+        user_repo.as_ref(),
+        user.id,
+        body.avatar_url,
+        body.bio,
+        body.city,
+        body.latitude,
+        body.longitude,
+    )
+    .await?;
+    Ok(Json(PrivateUserResponse::from(updated)))
+}
+
+async fn get_user<S: AppServices>(
+    _user: User,
+    State(user_repo): State<UserRepoState<S>>,
+    Path(user_id): Path<Uuid>,
+) -> Result<Json<PublicUserResponse>, ApiError> {
+    let user = domain::user::crud::get_user(user_repo.as_ref(), user_id).await?;
+    Ok(Json(PublicUserResponse::from(user)))
+}
+
+#[derive(Deserialize)]
 struct NearbyQuery {
     lat: f64,
     lon: f64,
@@ -113,15 +150,21 @@ struct NearbyQuery {
 }
 
 async fn nearby_users<S: AppServices>(
-    _user: User,
+    user: User,
     State(user_repo): State<UserRepoState<S>>,
     Query(params): Query<NearbyQuery>,
 ) -> Result<Json<Vec<PublicUserResponse>>, ApiError> {
-    use domain::ports::UserRepository;
-    let users = user_repo
-        .find_nearby(params.lat, params.lon, params.radius_meters)
-        .await?;
-    Ok(Json(users.into_iter().map(PublicUserResponse::from).collect()))
+    let users = domain::user::crud::find_nearby_users(
+        user_repo.as_ref(),
+        user.id,
+        params.lat,
+        params.lon,
+        params.radius_meters,
+    )
+    .await?;
+    Ok(Json(
+        users.into_iter().map(PublicUserResponse::from).collect(),
+    ))
 }
 
 async fn nearby_users_by_interests<S: AppServices>(
@@ -130,17 +173,17 @@ async fn nearby_users_by_interests<S: AppServices>(
     State(interests_repo): State<UserInterestsRepoState<S>>,
     Query(params): Query<NearbyQuery>,
 ) -> Result<Json<Vec<PublicUserResponse>>, ApiError> {
-    use domain::ports::{UserInterestsRepository, UserRepository};
+    let users = domain::user::crud::find_nearby_by_interests(
+        user_repo.as_ref(),
+        interests_repo.as_ref(),
+        user.id,
+        params.lat,
+        params.lon,
+        params.radius_meters,
+    )
+    .await?;
 
-    let embedding = interests_repo
-        .find_by_user(user.id)
-        .await?
-        .and_then(|i| i.embedding)
-        .ok_or_else(|| DomainError::InvalidInput("no interest embedding found".into()))?;
-
-    let users = user_repo
-        .find_nearby_by_interests(params.lat, params.lon, params.radius_meters, &embedding)
-        .await?;
-
-    Ok(Json(users.into_iter().map(PublicUserResponse::from).collect()))
+    Ok(Json(
+        users.into_iter().map(PublicUserResponse::from).collect(),
+    ))
 }
