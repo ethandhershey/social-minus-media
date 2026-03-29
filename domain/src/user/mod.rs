@@ -19,6 +19,11 @@ pub struct User {
     pub sub: String,
     pub email: String,
     pub display_name: String,
+    pub avatar_url: Option<String>,
+    pub bio: Option<String>,
+    pub city: Option<String>,
+    pub latitude: Option<f64>,
+    pub longitude: Option<f64>,
     pub tier: Tier,
     pub api_usage: ApiUsage,
     pub storage_usage: StorageUsage,
@@ -61,13 +66,7 @@ pub enum Tier {
 )]
 #[cfg_attr(feature = "sqlx", derive(sqlx::Type))]
 #[cfg_attr(feature = "sqlx", sqlx(transparent))]
-pub struct ApiUsage(pub u32);
-
-impl From<i64> for ApiUsage {
-    fn from(v: i64) -> Self {
-        Self(v as u32)
-    }
-}
+pub struct ApiUsage(pub i64);
 
 #[derive(
     Debug,
@@ -87,13 +86,7 @@ impl From<i64> for ApiUsage {
 )]
 #[cfg_attr(feature = "sqlx", derive(sqlx::Type))]
 #[cfg_attr(feature = "sqlx", sqlx(transparent))]
-pub struct StorageUsage(pub u32);
-
-impl From<i64> for StorageUsage {
-    fn from(v: i64) -> Self {
-        Self(v as u32)
-    }
-}
+pub struct StorageUsage(pub i64);
 
 /// Parsed Stripe webhook events relevant to subscription management.
 #[derive(Debug)]

@@ -47,4 +47,8 @@ impl LlmService for FakeAiService {
         serde_json::from_value(self.structured_response.clone())
             .map_err(|_| DomainError::AiServiceUnavailable)
     }
+
+    async fn embed(&self, _model: &str, _input: &str) -> Result<Vec<f32>, DomainError> {
+        Ok(vec![0.0; 1536])
+    }
 }

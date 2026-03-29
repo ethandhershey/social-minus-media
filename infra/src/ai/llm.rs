@@ -47,6 +47,12 @@ pub struct ModelParameters {
 // ---------------------------------------------------------------------------
 
 #[derive(Serialize)]
+struct EmbedRequest<'a> {
+    model: &'a str,
+    input: &'a str,
+}
+
+#[derive(Serialize)]
 struct ChatMessage<'a> {
     role: &'a str,
     content: &'a str,
@@ -247,5 +253,49 @@ impl LlmService for SimpleLlmClient {
                 "structured response deserialization failed: {e}\nraw: {raw}"
             ))
         })
+    }
+
+    async fn embed(&self, model: &str, input: &str) -> Result<Vec<f32>, DomainError> {
+        let (provider, _) = self.resolve(model)?;
+
+        let url = format!("{}/embeddings", provider.base_url.trim_end_matches('/'));
+
+        let body = EmbedRequest { model, input };
+        let mut req = self.client.post(url).json(&body);
+
+        if let Some(key) = &provider.api_key {
+            req = req.bearer_auth(key.expose_secret());
+        }
+
+        let resp = req
+            .send()
+            .await
+            .map_err(|e| DomainError::Internal(anyhow!("{e}")))?;
+
+        if !resp.status().is_success() {
+            let status = resp.status();
+            let text = resp.text().await.unwrap_or_default();
+            return Err(DomainError::Internal(anyhow!(
+                "embed API error {status}: {text}"
+            )));
+        }
+
+        let embedding = resp
+            .json::<Value>()
+            .await
+            .map_err(|e| DomainError::Internal(anyhow!("failed to deserialize embed response: {e}")))?
+            .pointer("/data/0/embedding")
+            .ok_or_else(|| DomainError::Internal(anyhow!("missing embedding in response")))?
+            .as_array()
+            .ok_or_else(|| DomainError::Internal(anyhow!("embedding is not an array")))?
+            .iter()
+            .map(|v| {
+                v.as_f64()
+                    .map(|f| f as f32)
+                    .ok_or_else(|| DomainError::Internal(anyhow!("non-numeric value in embedding")))
+            })
+            .collect::<Result<Vec<f32>, _>>()?;
+
+        Ok(embedding)
     }
 }

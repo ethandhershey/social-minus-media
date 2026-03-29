@@ -1,7 +1,10 @@
 use crate::{
     error::DomainError,
+    event::Event,
     product::Product,
+    rsvp::Rsvp,
     user::{AuthUser, BillingEvent, Tier, User},
+    user_interests::UserInterests,
 };
 use uuid::Uuid;
 
@@ -16,6 +19,7 @@ pub trait UserRepository: Send + Sync {
     async fn find_by_sub(&self, user_sub: &str) -> Result<User, DomainError>;
     async fn upsert(&self, user: &AuthUser) -> Result<User, DomainError>;
     async fn find_by_billing_customer_id(&self, customer_id: &str) -> Result<User, DomainError>;
+    async fn find_nearby(&self, lat: f64, lon: f64, radius_meters: f64) -> Result<Vec<User>, DomainError>;
     async fn update_subscription(
         &self,
         user_id: Uuid,
@@ -60,6 +64,7 @@ pub trait LlmService: Send + Sync {
     ) -> Result<T, DomainError>
     where
         T: schemars::JsonSchema + serde::de::DeserializeOwned;
+    async fn embed(&self, model: &str, input: &str) -> Result<Vec<f32>, DomainError>;
 }
 
 #[trait_variant::make(Send)]
@@ -79,6 +84,30 @@ pub trait MailService: Send + Sync {
         subject: &str,
         html_body: &str,
     ) -> Result<(), DomainError>;
+}
+
+#[trait_variant::make(Send)]
+pub trait EventRepository: Send + Sync {
+    async fn find(&self, event_id: Uuid) -> Result<Event, DomainError>;
+    async fn find_by_host(&self, host_id: Uuid) -> Result<Vec<Event>, DomainError>;
+    async fn find_upcoming(&self, limit: i64) -> Result<Vec<Event>, DomainError>;
+    async fn upsert(&self, event: &Event) -> Result<Event, DomainError>;
+    async fn delete(&self, event_id: Uuid) -> Result<(), DomainError>;
+}
+
+#[trait_variant::make(Send)]
+pub trait RsvpRepository: Send + Sync {
+    async fn find(&self, user_id: Uuid, event_id: Uuid) -> Result<Option<Rsvp>, DomainError>;
+    async fn find_by_event(&self, event_id: Uuid) -> Result<Vec<Rsvp>, DomainError>;
+    async fn find_by_user(&self, user_id: Uuid) -> Result<Vec<Rsvp>, DomainError>;
+    async fn upsert(&self, rsvp: &Rsvp) -> Result<Rsvp, DomainError>;
+    async fn delete(&self, user_id: Uuid, event_id: Uuid) -> Result<(), DomainError>;
+}
+
+#[trait_variant::make(Send)]
+pub trait UserInterestsRepository: Send + Sync {
+    async fn find_by_user(&self, user_id: Uuid) -> Result<Option<UserInterests>, DomainError>;
+    async fn upsert(&self, interests: &UserInterests) -> Result<UserInterests, DomainError>;
 }
 
 #[trait_variant::make(Send)]
