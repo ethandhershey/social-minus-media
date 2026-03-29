@@ -47,8 +47,8 @@ export default function Home() {
 
         // Placeholder data for manual testing
         setConfig({
-          domain: "https://your-instance.zitadel.cloud",
-          clientId: "your-client-id-here",
+          domain: "https://dev-instance-5jlgbb.us1.zitadel.cloud/",
+          clientId: "366182404831916212",
           scope: "openid profile email",
         });
       } catch (err) {
@@ -74,6 +74,7 @@ export default function Home() {
     sessionStorage.setItem(SK.s, state);
 
     // Redirect to activities page after Zitadel auth
+    // console.log(window.location.origin);
     const redirectUri = window.location.origin + "/activities";
 
     const u = new URL(`${cleanDomain}/oauth/v2/authorize`);
