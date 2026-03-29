@@ -45,7 +45,7 @@ impl UserRepository for FakeUserProfileRepository {
             .ok_or(DomainError::NotFound)
     }
 
-    async fn upsert(&self, user: &AuthUser) -> Result<User, DomainError> {
+    async fn upsert(&self, user: &User) -> Result<User, DomainError> {
         let now = OffsetDateTime::now_utc();
         let mut profiles = self.profiles.write().unwrap();
 
@@ -111,8 +111,8 @@ impl UserRepository for FakeUserProfileRepository {
 
     async fn find_nearby(
         &self,
-        lat: f64,
-        lon: f64,
+        _lat: f64,
+        _lon: f64,
         _radius_meters: f64,
     ) -> Result<Vec<User>, DomainError> {
         let profiles = self.profiles.read().unwrap();

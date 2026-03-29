@@ -11,6 +11,7 @@ use axum::{
 use domain::user::{Tier, User};
 use serde::{Deserialize, Serialize};
 use time::{OffsetDateTime, serde::rfc3339};
+use tracing::debug;
 use uuid::Uuid;
 
 // ── Response types ────────────────────────────────────────────────────────────
@@ -103,6 +104,7 @@ pub fn router<S: AppServices>() -> Router<AppState<S>> {
 // ── Handlers ──────────────────────────────────────────────────────────────────
 
 async fn get_profile(user: User) -> Result<impl IntoResponse, ApiError> {
+    debug!("{:?}", user);
     Ok(Json(PrivateUserResponse::from(user)))
 }
 

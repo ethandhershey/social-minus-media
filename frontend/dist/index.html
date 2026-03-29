@@ -1,225 +1,602 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Zitadel Tester</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
-  <style>
-    body { font-family: monospace; padding: 20px; max-width: 900px; margin: 0 auto; }
-    h2 { margin-top: 30px; border-bottom: 1px solid #ccc; padding-bottom: 4px; }
-    label { display: block; margin-top: 10px; font-weight: bold; }
-    input { width: 100%; padding: 6px; font-family: monospace; font-size: 14px; box-sizing: border-box; }
-    button { margin-top: 10px; padding: 8px 20px; font-size: 14px; cursor: pointer; }
-    pre { background: #f4f4f4; padding: 12px; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
-    .row { display: flex; gap: 8px; align-items: center; margin-top: 10px; }
-    .row input { flex: 1; margin-top: 0; }
-    select { padding: 6px; font-family: monospace; font-size: 14px; }
-    .status { font-weight: bold; margin-top: 10px; }
-    .hint { color: #666; font-size: 12px; }
-    table { border-collapse: collapse; width: 100%; margin-top: 8px; }
-    td { border: 1px solid #ddd; padding: 6px 10px; vertical-align: top; word-break: break-all; }
-    td:first-child { font-weight: bold; white-space: nowrap; width: 200px; }
-  </style>
-</head>
-<body>
-<div id="root"></div>
-<script type="text/babel">
-const { useState, useEffect } = React;
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Zitadel Tester</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+        <style>
+            body {
+                font-family: monospace;
+                padding: 20px;
+                max-width: 900px;
+                margin: 0 auto;
+            }
+            h2 {
+                margin-top: 30px;
+                border-bottom: 1px solid #ccc;
+                padding-bottom: 4px;
+            }
+            label {
+                display: block;
+                margin-top: 10px;
+                font-weight: bold;
+            }
+            input {
+                width: 100%;
+                padding: 6px;
+                font-family: monospace;
+                font-size: 14px;
+                box-sizing: border-box;
+            }
+            button {
+                margin-top: 10px;
+                padding: 8px 20px;
+                font-size: 14px;
+                cursor: pointer;
+            }
+            pre {
+                background: #f4f4f4;
+                padding: 12px;
+                overflow-x: auto;
+                white-space: pre-wrap;
+                word-break: break-all;
+            }
+            .row {
+                display: flex;
+                gap: 8px;
+                align-items: center;
+                margin-top: 10px;
+            }
+            .row input {
+                flex: 1;
+                margin-top: 0;
+            }
+            select {
+                padding: 6px;
+                font-family: monospace;
+                font-size: 14px;
+            }
+            .status {
+                font-weight: bold;
+                margin-top: 10px;
+            }
+            .hint {
+                color: #666;
+                font-size: 12px;
+            }
+            .console-tip {
+                background: #1e1e1e;
+                color: #4ec9b0;
+                padding: 10px 14px;
+                border-radius: 4px;
+                font-size: 13px;
+                margin-top: 10px;
+            }
+            .console-tip span {
+                color: #ce9178;
+            }
+            table {
+                border-collapse: collapse;
+                width: 100%;
+                margin-top: 8px;
+            }
+            td {
+                border: 1px solid #ddd;
+                padding: 6px 10px;
+                vertical-align: top;
+                word-break: break-all;
+            }
+            td:first-child {
+                font-weight: bold;
+                white-space: nowrap;
+                width: 200px;
+            }
+            .config-status {
+                font-size: 12px;
+                margin-top: 4px;
+            }
+            .config-status.ok {
+                color: green;
+            }
+            .config-status.err {
+                color: red;
+            }
+            .config-status.loading {
+                color: #999;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="root"></div>
+        <script type="text/babel">
+            const { useState, useEffect } = React;
 
-function b64url(buf) {
-  return btoa(String.fromCharCode(...new Uint8Array(buf)))
-    .replace(/\+/g,"-").replace(/\//g,"_").replace(/=/g,"");
-}
-async function pkce() {
-  const v = b64url(crypto.getRandomValues(new Uint8Array(32)));
-  const d = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(v));
-  return { verifier: v, challenge: b64url(d) };
-}
-function randState() { return b64url(crypto.getRandomValues(new Uint8Array(16))); }
-function parseJWT(t) {
-  try { return JSON.parse(atob(t.split(".")[1].replace(/-/g,"+").replace(/_/g,"/"))); }
-  catch { return null; }
-}
+            function b64url(buf) {
+                return btoa(String.fromCharCode(...new Uint8Array(buf)))
+                    .replace(/\+/g, "-")
+                    .replace(/\//g, "_")
+                    .replace(/=/g, "");
+            }
+            async function pkce() {
+                const v = b64url(crypto.getRandomValues(new Uint8Array(32)));
+                const d = await crypto.subtle.digest(
+                    "SHA-256",
+                    new TextEncoder().encode(v),
+                );
+                return { verifier: v, challenge: b64url(d) };
+            }
+            function randState() {
+                return b64url(crypto.getRandomValues(new Uint8Array(16)));
+            }
+            function parseJWT(t) {
+                try {
+                    return JSON.parse(
+                        atob(
+                            t
+                                .split(".")[1]
+                                .replace(/-/g, "+")
+                                .replace(/_/g, "/"),
+                        ),
+                    );
+                } catch {
+                    return null;
+                }
+            }
 
-const SK = { v:"z_verifier", s:"z_state", cfg:"z_cfg" };
+            const SK = { v: "z_verifier", s: "z_state", cfg: "z_cfg" };
 
-function ClaimsTable({ claims }) {
-  return (
-    <table>
-      <tbody>
-        {Object.entries(claims).map(([k,v]) => (
-          <tr key={k}>
-            <td>{k}</td>
-            <td>{typeof v === "object" ? JSON.stringify(v, null, 2) : String(v)}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
-}
+            function ClaimsTable({ claims }) {
+                return (
+                    <table>
+                        <tbody>
+                            {Object.entries(claims).map(([k, v]) => (
+                                <tr key={k}>
+                                    <td>{k}</td>
+                                    <td>
+                                        {typeof v === "object"
+                                            ? JSON.stringify(v, null, 2)
+                                            : String(v)}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                );
+            }
 
-function App() {
-  const cfg0 = (() => { try { return JSON.parse(sessionStorage.getItem(SK.cfg)||"{}"); } catch { return {}; } })();
-  const [domain,   setDomain]   = useState(cfg0.domain   || "");
-  const [clientId, setClientId] = useState(cfg0.clientId || "");
-  const [scope,    setScope]    = useState(cfg0.scope     || "openid profile email");
-  const [tokens,   setTokens]   = useState(null);
-  const [userinfo, setUserinfo] = useState(null);
-  const [loading,  setLoading]  = useState(false);
-  const [error,    setError]    = useState(null);
+            function App() {
+                const cfg0 = (() => {
+                    try {
+                        return JSON.parse(
+                            sessionStorage.getItem(SK.cfg) || "{}",
+                        );
+                    } catch {
+                        return {};
+                    }
+                })();
+                const [domain, setDomain] = useState(cfg0.domain || "");
+                const [clientId, setClientId] = useState(cfg0.clientId || "");
+                const [scope, setScope] = useState(
+                    cfg0.scope || "openid profile email",
+                );
+                const [tokens, setTokens] = useState(null);
+                const [userinfo, setUserinfo] = useState(null);
+                const [loading, setLoading] = useState(false);
+                const [error, setError] = useState(null);
+                const [cfgStatus, setCfgStatus] = useState("loading"); // "loading" | "ok" | "err" | "manual"
 
-  // API tester
-  const [method,   setMethod]   = useState("GET");
-  const [url,      setUrl]      = useState("/api/products");
-  const [apiResp,  setApiResp]  = useState(null);
-  const [apiLoad,  setApiLoad]  = useState(false);
+                // API tester
+                const [method, setMethod] = useState("GET");
+                const [url, setUrl] = useState("/api/products");
+                const [apiResp, setApiResp] = useState(null);
+                const [apiLoad, setApiLoad] = useState(false);
 
-  const redirectUri = window.location.href.split("?")[0];
+                const redirectUri = window.location.href.split("?")[0];
 
-  useEffect(() => {
-    const p = new URLSearchParams(window.location.search);
-    const code = p.get("code"), st = p.get("state"), err = p.get("error");
-    if (err) { setError(err + ": " + (p.get("error_description")||"")); window.history.replaceState({}, "", location.pathname); return; }
-    if (!code) return;
-    if (st !== sessionStorage.getItem(SK.s)) { setError("state mismatch"); window.history.replaceState({}, "", location.pathname); return; }
-    const cfg = (() => { try { return JSON.parse(sessionStorage.getItem(SK.cfg)||"{}"); } catch { return {}; } })();
-    setLoading(true);
-    fetch(`${cfg.domain}/oauth/v2/token`, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: new URLSearchParams({ grant_type:"authorization_code", code, redirect_uri:redirectUri, client_id:cfg.clientId, code_verifier:sessionStorage.getItem(SK.v) }),
-    })
-      .then(r => r.json())
-      .then(data => {
-        window.history.replaceState({}, "", location.pathname);
-        sessionStorage.removeItem(SK.s); sessionStorage.removeItem(SK.v);
-        if (data.error) throw new Error(data.error + ": " + (data.error_description||""));
-        setTokens(data); setDomain(cfg.domain); setClientId(cfg.clientId); setScope(cfg.scope);
-        return fetch(`${cfg.domain}/oidc/v1/userinfo`, { headers: { Authorization: `Bearer ${data.access_token}` } });
-      })
-      .then(r => r.json())
-      .then(ui => { setUserinfo(ui); setLoading(false); })
-      .catch(e => { setError(e.message); setLoading(false); });
-  }, []);
+                // --- Auto-fetch /api/config on mount ---
+                useEffect(() => {
+                    // Only autofill if we don't already have saved config
+                    if (cfg0.domain && cfg0.clientId) {
+                        setCfgStatus("ok");
+                        return;
+                    }
+                    fetch("/api/config")
+                        .then((r) => {
+                            if (!r.ok) throw new Error(`HTTP ${r.status}`);
+                            return r.json();
+                        })
+                        .then((data) => {
+                            if (data.auth_issuer) setDomain(data.auth_issuer);
+                            if (data.auth_client_id)
+                                setClientId(data.auth_client_id);
+                            setCfgStatus("ok");
+                        })
+                        .catch((e) => {
+                            console.warn(
+                                "Could not load /api/config:",
+                                e.message,
+                            );
+                            setCfgStatus("err");
+                        });
+                }, []);
 
-  const login = async () => {
-    setError(null);
-    const clean = domain.replace(/\/$/,"");
-    sessionStorage.setItem(SK.cfg, JSON.stringify({ domain:clean, clientId, scope }));
-    const { verifier, challenge } = await pkce();
-    const state = randState();
-    sessionStorage.setItem(SK.v, verifier); sessionStorage.setItem(SK.s, state);
-    const u = new URL(`${clean}/oauth/v2/authorize`);
-    u.searchParams.set("response_type","code"); u.searchParams.set("client_id",clientId);
-    u.searchParams.set("redirect_uri",redirectUri); u.searchParams.set("scope",scope);
-    u.searchParams.set("state",state); u.searchParams.set("code_challenge",challenge);
-    u.searchParams.set("code_challenge_method","S256");
-    window.location.href = u.toString();
-  };
+                // --- Expose token on window for console use ---
+                useEffect(() => {
+                    if (tokens?.access_token) {
+                        window._token = tokens.access_token;
+                        window._authHeader = `Bearer ${tokens.access_token}`;
+                        console.log(
+                            "%c[Zitadel Tester] Token ready on window._token\n" +
+                                "%cQuick fetch:\n" +
+                                "%cfetch('/api/products', { headers: { Authorization: _authHeader } }).then(r => r.json()).then(console.log)",
+                            "color: #4ec9b0; font-weight: bold",
+                            "color: #999",
+                            "color: #ce9178",
+                        );
+                    } else {
+                        delete window._token;
+                        delete window._authHeader;
+                    }
+                }, [tokens]);
 
-  const logout = () => { setTokens(null); setUserinfo(null); setError(null); setApiResp(null); sessionStorage.clear(); };
+                // --- Handle OAuth callback ---
+                useEffect(() => {
+                    const p = new URLSearchParams(window.location.search);
+                    const code = p.get("code"),
+                        st = p.get("state"),
+                        err = p.get("error");
+                    if (err) {
+                        setError(
+                            err + ": " + (p.get("error_description") || ""),
+                        );
+                        window.history.replaceState({}, "", location.pathname);
+                        return;
+                    }
+                    if (!code) return;
+                    if (st !== sessionStorage.getItem(SK.s)) {
+                        setError("state mismatch");
+                        window.history.replaceState({}, "", location.pathname);
+                        return;
+                    }
+                    const cfg = (() => {
+                        try {
+                            return JSON.parse(
+                                sessionStorage.getItem(SK.cfg) || "{}",
+                            );
+                        } catch {
+                            return {};
+                        }
+                    })();
+                    setLoading(true);
+                    fetch(`${cfg.domain}/oauth/v2/token`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/x-www-form-urlencoded",
+                        },
+                        body: new URLSearchParams({
+                            grant_type: "authorization_code",
+                            code,
+                            redirect_uri: redirectUri,
+                            client_id: cfg.clientId,
+                            code_verifier: sessionStorage.getItem(SK.v),
+                        }),
+                    })
+                        .then((r) => r.json())
+                        .then((data) => {
+                            window.history.replaceState(
+                                {},
+                                "",
+                                location.pathname,
+                            );
+                            sessionStorage.removeItem(SK.s);
+                            sessionStorage.removeItem(SK.v);
+                            if (data.error)
+                                throw new Error(
+                                    data.error +
+                                        ": " +
+                                        (data.error_description || ""),
+                                );
+                            setTokens(data);
+                            setDomain(cfg.domain);
+                            setClientId(cfg.clientId);
+                            setScope(cfg.scope);
+                            return fetch(`${cfg.domain}/oidc/v1/userinfo`, {
+                                headers: {
+                                    Authorization: `Bearer ${data.access_token}`,
+                                },
+                            });
+                        })
+                        .then((r) => r.json())
+                        .then((ui) => {
+                            setUserinfo(ui);
+                            setLoading(false);
+                        })
+                        .catch((e) => {
+                            setError(e.message);
+                            setLoading(false);
+                        });
+                }, []);
 
-  const sendApi = async () => {
-    setApiLoad(true); setApiResp(null);
-    const t0 = performance.now();
-    try {
-      const res = await fetch(url, { method, headers: { Authorization: `Bearer ${tokens.access_token}` } });
-      const elapsed = Math.round(performance.now() - t0);
-      const text = await res.text();
-      let body; try { body = JSON.stringify(JSON.parse(text), null, 2); } catch { body = text; }
-      const headers = {}; res.headers.forEach((v,k) => headers[k]=v);
-      setApiResp({ status: res.status, elapsed, body, headers });
-    } catch(e) {
-      setApiResp({ status: "ERR", elapsed: Math.round(performance.now()-t0), body: e.message, headers:{} });
-    }
-    setApiLoad(false);
-  };
+                const login = async () => {
+                    setError(null);
+                    const clean = domain.replace(/\/$/, "");
+                    sessionStorage.setItem(
+                        SK.cfg,
+                        JSON.stringify({ domain: clean, clientId, scope }),
+                    );
+                    const { verifier, challenge } = await pkce();
+                    const state = randState();
+                    sessionStorage.setItem(SK.v, verifier);
+                    sessionStorage.setItem(SK.s, state);
+                    const u = new URL(`${clean}/oauth/v2/authorize`);
+                    u.searchParams.set("response_type", "code");
+                    u.searchParams.set("client_id", clientId);
+                    u.searchParams.set("redirect_uri", redirectUri);
+                    u.searchParams.set("scope", scope);
+                    u.searchParams.set("state", state);
+                    u.searchParams.set("code_challenge", challenge);
+                    u.searchParams.set("code_challenge_method", "S256");
+                    window.location.href = u.toString();
+                };
 
-  const idClaims = tokens?.id_token     ? parseJWT(tokens.id_token)     : null;
-  const atClaims = tokens?.access_token ? parseJWT(tokens.access_token) : null;
+                const logout = () => {
+                    setTokens(null);
+                    setUserinfo(null);
+                    setError(null);
+                    setApiResp(null);
+                    sessionStorage.clear();
+                };
 
-  return (
-    <div>
-      <h1>Zitadel Tester</h1>
+                const sendApi = async () => {
+                    setApiLoad(true);
+                    setApiResp(null);
+                    const t0 = performance.now();
+                    try {
+                        const res = await fetch(url, {
+                            method,
+                            headers: {
+                                Authorization: `Bearer ${tokens.access_token}`,
+                            },
+                        });
+                        const elapsed = Math.round(performance.now() - t0);
+                        const text = await res.text();
+                        let body;
+                        try {
+                            body = JSON.stringify(JSON.parse(text), null, 2);
+                        } catch {
+                            body = text;
+                        }
+                        const headers = {};
+                        res.headers.forEach((v, k) => (headers[k] = v));
+                        setApiResp({
+                            status: res.status,
+                            elapsed,
+                            body,
+                            headers,
+                        });
+                    } catch (e) {
+                        setApiResp({
+                            status: "ERR",
+                            elapsed: Math.round(performance.now() - t0),
+                            body: e.message,
+                            headers: {},
+                        });
+                    }
+                    setApiLoad(false);
+                };
 
-      {!tokens && <>
-        <h2>Config</h2>
-        <label>Zitadel Domain</label>
-        <input value={domain} onChange={e=>setDomain(e.target.value)} placeholder="https://your-instance.zitadel.cloud"/>
-        <label>Client ID</label>
-        <input value={clientId} onChange={e=>setClientId(e.target.value)} placeholder="362241511015906669"/>
-        <label>Scope</label>
-        <input value={scope} onChange={e=>setScope(e.target.value)}/>
-        <label>Redirect URI (add this to Zitadel)</label>
-        <input value={redirectUri} readOnly/>
-        <br/>
-        <button onClick={login} disabled={!domain||!clientId||loading}>
-          {loading ? "Logging in..." : "Login with Zitadel"}
-        </button>
-      </>}
+                const idClaims = tokens?.id_token
+                    ? parseJWT(tokens.id_token)
+                    : null;
+                const atClaims = tokens?.access_token
+                    ? parseJWT(tokens.access_token)
+                    : null;
 
-      {tokens && <button onClick={logout} style={{marginTop:10}}>Logout</button>}
+                return (
+                    <div>
+                        <h1>Zitadel Tester</h1>
 
-      {error && <p style={{color:"red"}}>Error: {error}</p>}
+                        {!tokens && (
+                            <>
+                                <h2>Config</h2>
 
-      {tokens && <>
-        <h2>Token Info</h2>
-        <p>expires_in: {tokens.expires_in}s &nbsp;|&nbsp; token_type: {tokens.token_type} &nbsp;|&nbsp; has_refresh: {tokens.refresh_token ? "yes" : "no"}</p>
+                                {cfgStatus === "loading" && (
+                                    <p className="config-status loading">
+                                        ⏳ Loading config from /api/config…
+                                    </p>
+                                )}
+                                {cfgStatus === "ok" && (
+                                    <p className="config-status ok">
+                                        ✅ Config loaded from /api/config
+                                    </p>
+                                )}
+                                {cfgStatus === "err" && (
+                                    <p className="config-status err">
+                                        ⚠️ Could not reach /api/config — fill in
+                                        manually
+                                    </p>
+                                )}
 
-        <h2>API Tester</h2>
-        <div className="row">
-          <select value={method} onChange={e=>setMethod(e.target.value)}>
-            <option>GET</option><option>POST</option><option>PUT</option><option>PATCH</option><option>DELETE</option>
-          </select>
-          <input value={url} onChange={e=>setUrl(e.target.value)} onKeyDown={e=>e.key==="Enter"&&sendApi()}/>
-          <button onClick={sendApi} disabled={apiLoad}>{apiLoad?"Sending...":"Send"}</button>
-        </div>
-        <p className="hint">Sends: Authorization: Bearer {tokens.access_token.slice(0,16)}...</p>
+                                <label>Zitadel Domain</label>
+                                <input
+                                    value={domain}
+                                    onChange={(e) => setDomain(e.target.value)}
+                                    placeholder="https://your-instance.zitadel.cloud"
+                                />
+                                <label>Client ID</label>
+                                <input
+                                    value={clientId}
+                                    onChange={(e) =>
+                                        setClientId(e.target.value)
+                                    }
+                                    placeholder="362241511015906669"
+                                />
+                                <label>Scope</label>
+                                <input
+                                    value={scope}
+                                    onChange={(e) => setScope(e.target.value)}
+                                />
+                                <label>
+                                    Redirect URI (add this to Zitadel)
+                                </label>
+                                <input value={redirectUri} readOnly />
+                                <br />
+                                <button
+                                    onClick={login}
+                                    disabled={!domain || !clientId || loading}
+                                >
+                                    {loading
+                                        ? "Logging in…"
+                                        : "Login with Zitadel"}
+                                </button>
+                            </>
+                        )}
 
-        {apiResp && <>
-          <p className="status">Status: {apiResp.status} — {apiResp.elapsed}ms</p>
-          <h3>Response Headers</h3>
-          <table><tbody>
-            {Object.entries(apiResp.headers).map(([k,v])=>(
-              <tr key={k}><td>{k}</td><td>{v}</td></tr>
-            ))}
-          </tbody></table>
-          <h3>Response Body</h3>
-          <pre>{apiResp.body}</pre>
-        </>}
+                        {tokens && (
+                            <button onClick={logout} style={{ marginTop: 10 }}>
+                                Logout
+                            </button>
+                        )}
 
-        {userinfo && <>
-          <h2>Userinfo</h2>
-          <pre>{JSON.stringify(userinfo, null, 2)}</pre>
-        </>}
+                        {error && (
+                            <p style={{ color: "red" }}>Error: {error}</p>
+                        )}
 
-        {atClaims && <>
-          <h2>Access Token Claims</h2>
-          <ClaimsTable claims={atClaims}/>
-          <h3>Raw Access Token</h3>
-          <pre>{tokens.access_token}</pre>
-        </>}
+                        {tokens && (
+                            <>
+                                <h2>Token Info</h2>
+                                <p>
+                                    expires_in: {tokens.expires_in}s
+                                    &nbsp;|&nbsp; token_type:{" "}
+                                    {tokens.token_type} &nbsp;|&nbsp;
+                                    has_refresh:{" "}
+                                    {tokens.refresh_token ? "yes" : "no"}
+                                </p>
 
-        {!atClaims && tokens?.access_token && <>
-          <h2>Access Token (opaque — not a JWT)</h2>
-          <pre>{tokens.access_token}</pre>
-        </>}
+                                <div className="console-tip">
+                                    🖥️ Token available in console:
+                                    <br />
+                                    <span>window._token</span> — raw access
+                                    token
+                                    <br />
+                                    <span>window._authHeader</span> — "Bearer …"
+                                    string
+                                    <br />
+                                    <br />
+                                    Quick fetch example:
+                                    <br />
+                                    <span>
+                                        fetch('/api/products', {"{"} headers:{" "}
+                                        {"{"} Authorization: _authHeader {"}"}{" "}
+                                        {"}"}).then(r =&gt;
+                                        r.json()).then(console.log)
+                                    </span>
+                                </div>
 
-        {idClaims && <>
-          <h2>ID Token Claims</h2>
-          <ClaimsTable claims={idClaims}/>
-          <h3>Raw ID Token</h3>
-          <pre>{tokens.id_token}</pre>
-        </>}
-      </>}
-    </div>
-  );
-}
+                                <h2>API Tester</h2>
+                                <div className="row">
+                                    <select
+                                        value={method}
+                                        onChange={(e) =>
+                                            setMethod(e.target.value)
+                                        }
+                                    >
+                                        <option>GET</option>
+                                        <option>POST</option>
+                                        <option>PUT</option>
+                                        <option>PATCH</option>
+                                        <option>DELETE</option>
+                                    </select>
+                                    <input
+                                        value={url}
+                                        onChange={(e) => setUrl(e.target.value)}
+                                        onKeyDown={(e) =>
+                                            e.key === "Enter" && sendApi()
+                                        }
+                                    />
+                                    <button
+                                        onClick={sendApi}
+                                        disabled={apiLoad}
+                                    >
+                                        {apiLoad ? "Sending…" : "Send"}
+                                    </button>
+                                </div>
+                                <p className="hint">
+                                    Sends: Authorization: Bearer{" "}
+                                    {tokens.access_token.slice(0, 16)}…
+                                </p>
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
-</script>
-</body>
+                                {apiResp && (
+                                    <>
+                                        <p className="status">
+                                            Status: {apiResp.status} —{" "}
+                                            {apiResp.elapsed}ms
+                                        </p>
+                                        <h3>Response Headers</h3>
+                                        <table>
+                                            <tbody>
+                                                {Object.entries(
+                                                    apiResp.headers,
+                                                ).map(([k, v]) => (
+                                                    <tr key={k}>
+                                                        <td>{k}</td>
+                                                        <td>{v}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                        <h3>Response Body</h3>
+                                        <pre>{apiResp.body}</pre>
+                                    </>
+                                )}
+
+                                {userinfo && (
+                                    <>
+                                        <h2>Userinfo</h2>
+                                        <pre>
+                                            {JSON.stringify(userinfo, null, 2)}
+                                        </pre>
+                                    </>
+                                )}
+
+                                {atClaims && (
+                                    <>
+                                        <h2>Access Token Claims</h2>
+                                        <ClaimsTable claims={atClaims} />
+                                        <h3>Raw Access Token</h3>
+                                        <pre>{tokens.access_token}</pre>
+                                    </>
+                                )}
+
+                                {!atClaims && tokens?.access_token && (
+                                    <>
+                                        <h2>
+                                            Access Token (opaque — not a JWT)
+                                        </h2>
+                                        <pre>{tokens.access_token}</pre>
+                                    </>
+                                )}
+
+                                {idClaims && (
+                                    <>
+                                        <h2>ID Token Claims</h2>
+                                        <ClaimsTable claims={idClaims} />
+                                        <h3>Raw ID Token</h3>
+                                        <pre>{tokens.id_token}</pre>
+                                    </>
+                                )}
+                            </>
+                        )}
+                    </div>
+                );
+            }
+
+            ReactDOM.createRoot(document.getElementById("root")).render(
+                <App />,
+            );
+        </script>
+    </body>
 </html>

@@ -17,7 +17,7 @@ pub trait Authenticator: Send + Sync {
 pub trait UserRepository: Send + Sync {
     async fn find_by_id(&self, user_id: Uuid) -> Result<User, DomainError>;
     async fn find_by_sub(&self, user_sub: &str) -> Result<User, DomainError>;
-    async fn upsert(&self, user: &AuthUser) -> Result<User, DomainError>;
+    async fn upsert(&self, user: &User) -> Result<User, DomainError>;
     async fn find_by_billing_customer_id(&self, customer_id: &str) -> Result<User, DomainError>;
     async fn find_nearby(
         &self,

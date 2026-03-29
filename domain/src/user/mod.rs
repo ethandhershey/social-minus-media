@@ -9,8 +9,6 @@ use uuid::Uuid;
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AuthUser {
     pub sub: String,
-    pub email: String,
-    pub display_name: String,
 }
 
 #[derive(Debug, Clone, Deserialize)]

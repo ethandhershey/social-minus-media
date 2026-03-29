@@ -1,7 +1,7 @@
 use domain::ports::UserRepository;
 use domain::{
     error::DomainError,
-    user::{AuthUser, Tier, User},
+    user::{Tier, User},
 };
 use sqlx::PgPool;
 use uuid::Uuid;
@@ -59,7 +59,7 @@ impl UserRepository for PgUserRepository {
         .map_err(|_| DomainError::NotFound)
     }
 
-    async fn upsert(&self, user: &AuthUser) -> Result<User, DomainError> {
+    async fn upsert(&self, user: &User) -> Result<User, DomainError> {
         let id = Uuid::now_v7();
         sqlx::query_as!(
             User,

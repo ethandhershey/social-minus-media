@@ -7,6 +7,7 @@ use serde::Serialize;
 use serde_json::Value;
 
 use domain::{error::DomainError, ports::LlmService};
+use tracing::debug;
 
 use crate::http::HttpClient;
 
@@ -115,7 +116,10 @@ impl SimpleLlmClient {
 }
 
 impl SimpleLlmClient {
-    fn resolve(&self, model: &str) -> Result<(&Provider, &ModelConfig), DomainError> {
+    fn resolve<'a>(
+        &'a self,
+        model: &'a str,
+    ) -> Result<(&'a Provider, &'a ModelConfig, &'a str), DomainError> {
         let model_config = self
             .models
             .get(model)
@@ -131,10 +135,14 @@ impl SimpleLlmClient {
                 ))
             })?;
 
-        Ok((provider, model_config))
+        let bare_model = model
+            .strip_prefix(&format!("{}:", model_config.provider_name))
+            .unwrap_or(model);
+
+        Ok((provider, model_config, bare_model))
     }
 
-    fn resolve_embed(&self, model: &str) -> Result<&Provider, DomainError> {
+    fn resolve_embed<'a>(&'a self, model: &'a str) -> Result<(&'a Provider, &'a str), DomainError> {
         let embed_config = self
             .embed_models
             .get(model)
@@ -150,7 +158,11 @@ impl SimpleLlmClient {
                 ))
             })?;
 
-        Ok(provider)
+        let bare_model = model
+            .strip_prefix(&format!("{}:", embed_config.provider_name))
+            .unwrap_or(model);
+
+        Ok((provider, bare_model))
     }
 
     async fn send(
@@ -158,6 +170,8 @@ impl SimpleLlmClient {
         provider: &Provider,
         body: &ChatRequest<'_>,
     ) -> Result<String, DomainError> {
+        debug!("{:?}, {:?}", provider, body.model);
+
         let url = format!(
             "{}/chat/completions",
             provider.base_url.trim_end_matches('/')
@@ -209,10 +223,10 @@ impl LlmService for SimpleLlmClient {
         system_prompt: &str,
         user_message: &str,
     ) -> Result<String, DomainError> {
-        let (provider, model_config) = self.resolve(model)?;
+        let (provider, model_config, bare_model) = self.resolve(model)?;
 
         let body = ChatRequest {
-            model,
+            model: bare_model,
             messages: vec![
                 ChatMessage {
                     role: "system",
@@ -239,7 +253,7 @@ impl LlmService for SimpleLlmClient {
     where
         T: schemars::JsonSchema + serde::de::DeserializeOwned,
     {
-        let (provider, model_config) = self.resolve(model)?;
+        let (provider, model_config, bare_model) = self.resolve(model)?;
 
         let schema_value = schemars::schema_for!(T).to_value();
 
@@ -251,7 +265,7 @@ impl LlmService for SimpleLlmClient {
             .replace(' ', "_");
 
         let body = ChatRequest {
-            model,
+            model: bare_model,
             messages: vec![
                 ChatMessage {
                     role: "system",
@@ -283,11 +297,14 @@ impl LlmService for SimpleLlmClient {
     }
 
     async fn embed(&self, model: &str, input: &str) -> Result<Vec<f32>, DomainError> {
-        let provider = self.resolve_embed(model)?;
+        let (provider, bare_model) = self.resolve_embed(model)?;
 
         let url = format!("{}/embeddings", provider.base_url.trim_end_matches('/'));
 
-        let body = EmbedRequest { model, input };
+        let body = EmbedRequest {
+            model: bare_model,
+            input,
+        };
         let mut req = self.client.post(url).json(&body);
 
         if let Some(key) = &provider.api_key {

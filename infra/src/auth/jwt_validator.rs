@@ -75,8 +75,6 @@ impl Authenticator for JwtTokenValidator {
         #[derive(serde::Deserialize)]
         struct ZitadelClaims {
             sub: String,
-            email: String,
-            name: String,
         }
 
         let claims = decode::<ZitadelClaims>(token, &decoding_key, &validation)
@@ -86,11 +84,7 @@ impl Authenticator for JwtTokenValidator {
             })?
             .claims;
 
-        Ok(AuthUser {
-            sub: claims.sub,
-            email: claims.email,
-            display_name: claims.name,
-        })
+        Ok(AuthUser { sub: claims.sub })
     }
 }
 

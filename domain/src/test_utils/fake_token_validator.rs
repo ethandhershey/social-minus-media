@@ -43,8 +43,8 @@ impl Authenticator for FakeTokenValidator {
                 display_name,
             } => Ok(AuthUser {
                 sub: sub.clone(),
-                email: email.clone(),
-                display_name: display_name.clone(),
+                // email: email.clone(),
+                // display_name: display_name.clone(),
             }),
             FakeTokenBehaviour::Invalid => Err(DomainError::Unauthorized),
         }

@@ -14,7 +14,7 @@ impl From<DomainError> for ApiError {
 
 impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
-        let status = match self.0 {
+        let status = match &self.0 {
             DomainError::Unauthorized => StatusCode::UNAUTHORIZED,
             DomainError::InsufficientTier => StatusCode::FORBIDDEN,
             DomainError::NotFound => StatusCode::NOT_FOUND,
@@ -26,6 +26,11 @@ impl IntoResponse for ApiError {
             DomainError::Parse => StatusCode::INTERNAL_SERVER_ERROR,
             DomainError::Internal(_) => StatusCode::INTERNAL_SERVER_ERROR,
         };
+
+        if status.is_server_error() {
+            tracing::error!(error = ?self.0, "internal server error");
+        }
+
         status.into_response()
     }
 }
