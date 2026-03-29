@@ -59,7 +59,11 @@ state_wrapper!(UserRepoState, UserRepo, user_repo);
 state_wrapper!(ProductRepoState, ProductRepo, product_repo);
 state_wrapper!(EventRepoState, EventRepo, event_repo);
 state_wrapper!(RsvpRepoState, RsvpRepo, rsvp_repo);
-state_wrapper!(UserInterestsRepoState, UserInterestsRepo, user_interests_repo);
+state_wrapper!(
+    UserInterestsRepoState,
+    UserInterestsRepo,
+    user_interests_repo
+);
 state_wrapper!(LlmState, Llm, llm);
 state_wrapper!(BillingState, Billing, billing);
 state_wrapper!(MailState, Mail, mail);

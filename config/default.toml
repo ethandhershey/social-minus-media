@@ -9,7 +9,7 @@ allowed_origins = [
 ]
 
 [database]
-url = "postgres://localhost/myapp"
+url = { env = "DATABASE_URL" }
 max_connections = 5
 
 [llm.interests]
@@ -28,8 +28,7 @@ temperature = 0.5
 
 [llm.providers.ollama]
 base_url = "http://localhost:11434/v1"
-
-[llm.providers.ollama.models."qwen3-embedding:0.6b"]
+embed_models = ["qwen3-embedding:0.6b"]
 
 # [llm.providers.openai-compat]
 # base_url = "https://api.some-compat-provider.com/v1"

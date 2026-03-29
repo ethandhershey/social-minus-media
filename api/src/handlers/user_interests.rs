@@ -1,8 +1,4 @@
-use axum::{
-    Json, Router,
-    extract::State,
-    routing::get,
-};
+use axum::{Json, Router, extract::State, routing::get};
 use domain::{user::User, user_interests::UserInterests};
 use serde::Deserialize;
 use serde_json::Value;

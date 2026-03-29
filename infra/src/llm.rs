@@ -26,6 +26,11 @@ pub struct ModelConfig {
     pub params: ModelParameters,
 }
 
+#[derive(Debug, Clone)]
+pub struct EmbedModelConfig {
+    pub provider_name: String,
+}
+
 #[derive(Debug, Clone, Default, Serialize)]
 pub struct ModelParameters {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -90,6 +95,7 @@ pub struct SimpleLlmClient {
     client: Client,
     providers: HashMap<String, Provider>,
     models: HashMap<String, ModelConfig>,
+    embed_models: HashMap<String, EmbedModelConfig>,
 }
 
 impl SimpleLlmClient {
@@ -97,11 +103,13 @@ impl SimpleLlmClient {
         http_client: HttpClient,
         providers: HashMap<String, Provider>,
         models: HashMap<String, ModelConfig>,
+        embed_models: HashMap<String, EmbedModelConfig>,
     ) -> Self {
         Self {
             client: http_client.into(),
             providers,
             models,
+            embed_models,
         }
     }
 }
@@ -124,6 +132,25 @@ impl SimpleLlmClient {
             })?;
 
         Ok((provider, model_config))
+    }
+
+    fn resolve_embed(&self, model: &str) -> Result<&Provider, DomainError> {
+        let embed_config = self
+            .embed_models
+            .get(model)
+            .ok_or_else(|| DomainError::Internal(anyhow!("unknown embed model: {model}")))?;
+
+        let provider = self
+            .providers
+            .get(&embed_config.provider_name)
+            .ok_or_else(|| {
+                DomainError::Internal(anyhow!(
+                    "unknown provider '{}' for embed model '{model}'",
+                    embed_config.provider_name
+                ))
+            })?;
+
+        Ok(provider)
     }
 
     async fn send(
@@ -256,7 +283,7 @@ impl LlmService for SimpleLlmClient {
     }
 
     async fn embed(&self, model: &str, input: &str) -> Result<Vec<f32>, DomainError> {
-        let (provider, _) = self.resolve(model)?;
+        let provider = self.resolve_embed(model)?;
 
         let url = format!("{}/embeddings", provider.base_url.trim_end_matches('/'));
 
@@ -283,7 +310,9 @@ impl LlmService for SimpleLlmClient {
         let embedding = resp
             .json::<Value>()
             .await
-            .map_err(|e| DomainError::Internal(anyhow!("failed to deserialize embed response: {e}")))?
+            .map_err(|e| {
+                DomainError::Internal(anyhow!("failed to deserialize embed response: {e}"))
+            })?
             .pointer("/data/0/embedding")
             .ok_or_else(|| DomainError::Internal(anyhow!("missing embedding in response")))?
             .as_array()

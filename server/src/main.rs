@@ -11,10 +11,8 @@ use infra::{
     entitlment::ConfigEntitlementService,
     mail::ResendMailClient,
     postgres::{
-        event_repo::PgEventRepository,
-        product_repo::PgProductRepository,
-        rsvp_repo::PgRsvpRepository,
-        user_interests_repo::PgUserInterestsRepository,
+        event_repo::PgEventRepository, product_repo::PgProductRepository,
+        rsvp_repo::PgRsvpRepository, user_interests_repo::PgUserInterestsRepository,
         user_repo::PgUserRepository,
     },
     stripe::StripeClient,
@@ -83,10 +81,11 @@ async fn main() -> Result<()> {
     .context("failed to initialise JWT validator")?;
 
     #[cfg(not(feature = "fake-ai"))]
-    let ai = infra::ai::llm::SimpleLlmClient::new(
+    let ai = infra::llm::SimpleLlmClient::new(
         http_client.clone(),
         config.llm.providers,
         config.llm.models,
+        config.llm.embed_models,
     );
     #[cfg(feature = "fake-ai")]
     let ai = domain::test_utils::fake_ai_service::FakeAiService::new();
@@ -129,7 +128,7 @@ async fn main() -> Result<()> {
         type RsvpRepo = PgRsvpRepository;
         type UserInterestsRepo = PgUserInterestsRepository;
         #[cfg(not(feature = "fake-ai"))]
-        type Llm = infra::ai::llm::SimpleLlmClient;
+        type Llm = infra::llm::SimpleLlmClient;
         #[cfg(feature = "fake-ai")]
         type Ai = domain::test_utils::fake_ai_service::FakeAiService;
         type Billing = StripeClient;
