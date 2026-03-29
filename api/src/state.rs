@@ -1,7 +1,7 @@
 use axum::extract::FromRef;
 use derive_more::Deref;
 use domain::ports::{
-    Authenticator, BillingService, EntitlementService, EventRepository, InterestsService,
+    Authenticator, BillingService, EntitlementService, EventRepository,
     LlmService, MailService, ProductRepository, RsvpRepository, UserInterestsRepository,
     UserRepository,
 };
@@ -17,7 +17,6 @@ pub trait AppServices: Clone + Send + Sync + 'static {
     type RsvpRepo: RsvpRepository;
     type UserInterestsRepo: UserInterestsRepository;
     type Llm: LlmService;
-    type Interests: InterestsService;
     type Billing: BillingService;
     type Mail: MailService;
     type Entitlement: EntitlementService;
@@ -57,7 +56,6 @@ state_wrapper!(EventRepoState, EventRepo, event_repo);
 state_wrapper!(RsvpRepoState, RsvpRepo, rsvp_repo);
 state_wrapper!(UserInterestsRepoState, UserInterestsRepo, user_interests_repo);
 state_wrapper!(LlmState, Llm, llm);
-state_wrapper!(InterestsServiceState, Interests, interests);
 state_wrapper!(BillingState, Billing, billing);
 state_wrapper!(MailState, Mail, mail);
 state_wrapper!(EntitlementState, Entitlement, entitlement);
@@ -73,7 +71,6 @@ pub struct AppState<S: AppServices> {
     rsvp_repo: RsvpRepoState<S>,
     user_interests_repo: UserInterestsRepoState<S>,
     llm: LlmState<S>,
-    interests: InterestsServiceState<S>,
     billing: BillingState<S>,
     mail: MailState<S>,
     entitlement: EntitlementState<S>,
@@ -88,7 +85,6 @@ impl<S: AppServices> AppState<S> {
         rsvp_repo: S::RsvpRepo,
         user_interests_repo: S::UserInterestsRepo,
         ai: S::Llm,
-        interests: S::Interests,
         billing: S::Billing,
         mail: S::Mail,
         entitlement: S::Entitlement,
@@ -101,7 +97,6 @@ impl<S: AppServices> AppState<S> {
             rsvp_repo: RsvpRepoState::new(rsvp_repo),
             user_interests_repo: UserInterestsRepoState::new(user_interests_repo),
             llm: LlmState::new(ai),
-            interests: InterestsServiceState::new(interests),
             billing: BillingState::new(billing),
             mail: MailState::new(mail),
             entitlement: EntitlementState::new(entitlement),

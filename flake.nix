@@ -19,6 +19,7 @@
           stable.clippy
           stable.rustfmt
           stable.rust-src
+          stable.rust-analyzer
           targets.${target}.stable.rust-std
         ];
       in {

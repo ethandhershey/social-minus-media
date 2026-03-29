@@ -6,7 +6,6 @@ use crate::{
     user::{AuthUser, BillingEvent, Tier, User},
     user_interests::UserInterests,
 };
-use serde_json::Value;
 use uuid::Uuid;
 
 #[trait_variant::make(Send)]
@@ -114,22 +113,8 @@ pub trait RsvpRepository: Send + Sync {
 pub trait UserInterestsRepository: Send + Sync {
     async fn find_by_user(&self, user_id: Uuid) -> Result<Option<UserInterests>, DomainError>;
     async fn upsert(&self, interests: &UserInterests) -> Result<UserInterests, DomainError>;
-}
-
-#[trait_variant::make(Send)]
-pub trait InterestsService: Send + Sync {
-    async fn get_interests(
-        &self,
-        repo: &impl UserInterestsRepository,
-        user_id: Uuid,
-    ) -> Result<Option<UserInterests>, DomainError>;
-    async fn update_interests(
-        &self,
-        repo: &impl UserInterestsRepository,
-        llm: &impl LlmService,
-        user_id: Uuid,
-        messages: Value,
-    ) -> Result<UserInterests, DomainError>;
+    fn get_summary_model(&self) -> &str;
+    fn get_embed_model(&self) -> &str;
 }
 
 #[trait_variant::make(Send)]

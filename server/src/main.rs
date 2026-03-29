@@ -9,7 +9,6 @@ use clap::{Parser, Subcommand};
 use infra::{
     auth::jwt_validator::JwtTokenValidator,
     entitlment::ConfigEntitlementService,
-    interests::LlmInterestsService,
     mail::ResendMailClient,
     postgres::{
         event_repo::PgEventRepository, product_repo::PgProductRepository,
@@ -95,7 +94,11 @@ async fn main() -> Result<()> {
     let product_repo = PgProductRepository::new(pool.clone());
     let event_repo = PgEventRepository::new(pool.clone());
     let rsvp_repo = PgRsvpRepository::new(pool.clone());
-    let user_interests_repo = PgUserInterestsRepository::new(pool.clone());
+    let user_interests_repo = PgUserInterestsRepository::new(
+        pool.clone(),
+        config.llm.interests_summary_model,
+        config.llm.interests_embed_model,
+    );
 
     let stripe = StripeClient::new(
         http_client.clone(),
@@ -117,11 +120,6 @@ async fn main() -> Result<()> {
 
     let entitlment = ConfigEntitlementService::new(config.tiers.into());
 
-    let interests = LlmInterestsService::new(
-        config.llm.interests_summary_model,
-        config.llm.interests_embed_model,
-    );
-
     // ── State ────────────────────────────────────────────────────────────────
     #[derive(Clone)]
     struct Services;
@@ -137,7 +135,6 @@ async fn main() -> Result<()> {
         type Llm = infra::llm::SimpleLlmClient;
         #[cfg(feature = "fake-ai")]
         type Llm = domain::test_utils::fake_ai_service::FakeAiService;
-        type Interests = LlmInterestsService;
         type Billing = StripeClient;
         type Mail = ResendMailClient;
         type Entitlement = ConfigEntitlementService;
@@ -151,7 +148,6 @@ async fn main() -> Result<()> {
         rsvp_repo,
         user_interests_repo,
         ai,
-        interests,
         stripe,
         mail,
         entitlment,

@@ -21,21 +21,19 @@ pub async fn update_interests(
     llm: &impl LlmService,
     user_id: Uuid,
     messages: Value,
-    summary_model: &str,
-    embed_model: &str,
 ) -> Result<UserInterests, DomainError> {
     let messages_str = serde_json::to_string(&messages)
         .map_err(|e| DomainError::Internal(anyhow!("failed to serialize messages: {e}")))?;
 
     let summary = llm
         .get_simple_response(
-            summary_model,
+            repo.get_summary_model(),
             "Summarize the user's interests and preferences based on this conversation. Be concise and focus on topics, hobbies, and activities they care about.",
             &messages_str,
         )
         .await?;
 
-    let embedding = llm.embed(embed_model, &summary).await?;
+    let embedding = llm.embed(repo.get_embed_model(), &summary).await?;
 
     let existing = repo.find_by_user(user_id).await?;
     let now = OffsetDateTime::now_utc();

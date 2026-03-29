@@ -2,7 +2,12 @@ use crate::{
     error::ApiError,
     state::{AppServices, AppState, UserRepoState},
 };
-use axum::{Json, Router, extract::{Query, State}, response::IntoResponse, routing::get};
+use axum::{
+    Json, Router,
+    extract::{Query, State},
+    response::IntoResponse,
+    routing::get,
+};
 use domain::user::User;
 use serde::Deserialize;
 
