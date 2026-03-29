@@ -6,7 +6,12 @@ import styles from "./signup.module.css";
 
 export default function SignupPage() {
   const router = useRouter();
-  const [formData, setFormData] = useState({ bio: "", hometown: "" });
+  const [formData, setFormData] = useState({ 
+    username: "", 
+    email: "", 
+    bio: "", 
+    hometown: "" 
+  });
   const [location, setLocation] = useState(null);
   const [locStatus, setLocStatus] = useState("idle");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -34,40 +39,61 @@ export default function SignupPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // 1. HARD VALIDATION: Ensure we have the critical data
     if (!location) return alert("Please allow location access first.");
+    if (!formData.username.trim() || !formData.email.trim()) {
+      return alert("Username and Email are required to complete signup.");
+    }
 
     setIsSubmitting(true);
 
+    // 2. CONSTRUCT PAYLOAD: Explicitly mapping to match your backend DTO
     const payload = {
-      bio: formData.bio,
-      city: formData.hometown,
+      display_name: formData.username.trim(), 
+      email: formData.email.trim(),
+      avatar_url: null,
+      bio: formData.bio.trim() || null,
+      city: formData.hometown.trim() || null,
       latitude: location.lat,
       longitude: location.lng,
-      // sub: userSub, // This would come from your Zitadel token state
     };
 
-    console.log("Submitting to backend:", payload);
-
-    /* // BACKEND POST LOGIC (Commented out for now)
     try {
-      const response = await fetch('/api/users/profile', {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${sessionStorage.getItem('access_token')}`
-        },
-        body: JSON.stringify(payload)
-      });
-      if (response.ok) router.push('/activities');
-    } catch (err) {
-      console.error(err);
-    }
-    */
+      const token = sessionStorage.getItem("access_token");
+      const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+      
+      if (!token) {
+        throw new Error("No session token found. Please sign in again.");
+      }
 
-    // Simulate successful POST and redirect
-    setTimeout(() => {
+      console.log("Submitting Profile Payload:", payload); // Debug check
+
+      const response = await fetch(`${baseUrl}/api/profile`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text(); 
+        const errorData = errorText ? JSON.parse(errorText) : {};
+        throw new Error(errorData.message || `Server error: ${response.status}`);
+      }
+
+      // 3. SUCCESS REDIRECT
+      // Pushing to alignment first to ensure the backend has processed the profile
       router.push("/alignment");
-    }, 1000);
+      
+    } catch (err) {
+      console.error("Profile Update Error:", err);
+      alert(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -78,8 +104,35 @@ export default function SignupPage() {
 
         <form className={styles.form} onSubmit={handleSubmit}>
           <div className={styles.field}>
-            <label className={styles.label}>Hometown (City)</label>
+            <label className={styles.label} htmlFor="username">Username</label>
             <input
+              id="username"
+              type="text"
+              className={styles.input}
+              placeholder="Pick a unique name"
+              required
+              value={formData.username}
+              onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+            />
+          </div>
+
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="email">Email Address</label>
+            <input
+              id="email"
+              type="email"
+              className={styles.input}
+              placeholder="your@email.com"
+              required
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            />
+          </div>
+
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor="hometown">Hometown (City)</label>
+            <input
+              id="hometown"
               type="text"
               className={styles.input}
               placeholder="e.g. Austin, TX"
@@ -90,10 +143,11 @@ export default function SignupPage() {
           </div>
 
           <div className={styles.field}>
-            <label className={styles.label}>Bio</label>
+            <label className={styles.label} htmlFor="bio">Bio</label>
             <textarea
+              id="bio"
               className={styles.textarea}
-              placeholder="Tell people about yourself and what you like to do..."
+              placeholder="Tell people about yourself..."
               required
               value={formData.bio}
               onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
@@ -108,8 +162,8 @@ export default function SignupPage() {
               onClick={handleLocation}
               style={{ 
                 width: '100%', 
-                background: locStatus === 'success' ? 'var(--green-light, #e8f5e9)' : 'transparent',
-                borderColor: locStatus === 'success' ? 'var(--green, #7dae8a)' : ''
+                background: locStatus === 'success' ? '#e8f5e9' : 'transparent',
+                borderColor: locStatus === 'success' ? '#7dae8a' : '#ddd'
               }}
             >
               {locStatus === "loading" && "Fetching coordinates..."}
@@ -117,11 +171,14 @@ export default function SignupPage() {
               {locStatus === "error" && "✕ Access Denied"}
               {locStatus === "idle" && "Enable Location"}
             </button>
-            <p className={styles.hint}>Required to find activities in your area.</p>
           </div>
 
           <div className={styles.saveRow}>
-            <button type="submit" className={styles.saveBtn} disabled={isSubmitting || !location}>
+            <button 
+              type="submit" 
+              className={styles.saveBtn} 
+              disabled={isSubmitting || locStatus !== 'success'}
+            >
               {isSubmitting ? "Saving..." : "Finish Profile & Explore"}
             </button>
           </div>

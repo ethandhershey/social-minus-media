@@ -35,20 +35,16 @@ export default function Home() {
   useEffect(() => {
     async function fetchConfig() {
       try {
-        /* // Once backend is ready, this performs the GET call 
-        const response = await fetch('/api/auth-config'); 
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || "";
+        const response = await fetch(`${baseUrl}/api/config`);
+        
+        if (!response.ok) throw new Error("Config fetch failed");
+        
         const data = await response.json();
-        setConfig({
-          domain: data.domain,
-          clientId: data.clientId,
-          scope: "openid profile email"
-        });
-        */
 
-        // Placeholder data for manual testing
         setConfig({
-          domain: "https://dev-instance-5jlgbb.us1.zitadel.cloud/",
-          clientId: "366182404831916212",
+          domain: data.auth_issuer,
+          clientId: data.auth_client_id,
           scope: "openid profile email",
         });
       } catch (err) {
