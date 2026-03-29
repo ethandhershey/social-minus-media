@@ -66,7 +66,7 @@ export default function SignupPage() {
 
     // Simulate successful POST and redirect
     setTimeout(() => {
-      router.push("/activities");
+      router.push("/alignment");
     }, 1000);
   };
 
