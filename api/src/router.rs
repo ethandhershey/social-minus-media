@@ -31,6 +31,14 @@ pub fn create_router<S: AppServices>(
             axum::http::header::CONTENT_TYPE,
             axum::http::header::AUTHORIZATION,
         ])
+        .allow_methods([
+            axum::http::Method::GET,
+            axum::http::Method::POST,
+            axum::http::Method::PUT,
+            axum::http::Method::DELETE,
+            axum::http::Method::PATCH,
+            axum::http::Method::OPTIONS,
+        ])
         .allow_credentials(true);
 
     let api = handlers::simple::router()

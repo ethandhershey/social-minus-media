@@ -1,0 +1,126 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "SELECT u.id           as \"id: Uuid\",\n                      u.sub,\n                      u.email,\n                      u.display_name,\n                      u.avatar_url,\n                      u.bio,\n                      u.city,\n                      u.latitude,\n                      u.longitude,\n                      u.tier          as \"tier: Tier\",\n                      u.api_usage,\n                      u.storage_usage,\n                      u.billing_customer_id,\n                      u.billing_period_start as \"billing_period_start: time::OffsetDateTime\",\n                      u.created_at          as \"created_at: time::OffsetDateTime\",\n                      u.updated_at          as \"updated_at: time::OffsetDateTime\",\n                      u.archived_at         as \"archived_at: time::OffsetDateTime\"\n               FROM users u\n               JOIN user_interests ui ON ui.user_id = u.id\n               WHERE u.latitude IS NOT NULL AND u.longitude IS NOT NULL\n                 AND earth_box(ll_to_earth($1, $2), $3) @> ll_to_earth(u.latitude, u.longitude)\n                 AND ui.embedding IS NOT NULL\n               ORDER BY ui.embedding <=> $4",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id: Uuid",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "sub",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 2,
+        "name": "email",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "display_name",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "avatar_url",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "bio",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 6,
+        "name": "city",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 7,
+        "name": "latitude",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 8,
+        "name": "longitude",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 9,
+        "name": "tier: Tier",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 10,
+        "name": "api_usage",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 11,
+        "name": "storage_usage",
+        "type_info": "Int8"
+      },
+      {
+        "ordinal": 12,
+        "name": "billing_customer_id",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 13,
+        "name": "billing_period_start: time::OffsetDateTime",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 14,
+        "name": "created_at: time::OffsetDateTime",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 15,
+        "name": "updated_at: time::OffsetDateTime",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 16,
+        "name": "archived_at: time::OffsetDateTime",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Float8",
+        "Float8",
+        "Float8",
+        {
+          "Custom": {
+            "name": "vector",
+            "kind": "Simple"
+          }
+        }
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      true,
+      false,
+      false,
+      false,
+      true,
+      false,
+      false,
+      false,
+      true
+    ]
+  },
+  "hash": "c0bed17ced661c568a24bb2d70e3c50a715ac014c5af1192e4d4d96d319d7234"
+}

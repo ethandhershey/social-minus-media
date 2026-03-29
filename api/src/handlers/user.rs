@@ -95,7 +95,7 @@ impl From<User> for PublicUserResponse {
 pub fn router<S: AppServices>() -> Router<AppState<S>> {
     Router::new()
         .route("/profile", get(get_profile).put(update_profile))
-        .route("/users/:id", get(get_user))
+        .route("/users/{id}", get(get_user))
         .route("/users/nearby", get(nearby_users))
         .route("/users/nearby-by-interests", get(nearby_users_by_interests))
 }
