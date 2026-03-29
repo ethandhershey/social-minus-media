@@ -154,6 +154,17 @@ export default function ActivitiesPage() {
         <div className={styles.topLead}>
           <div className={styles.brand}>
             <Link className={styles.brandLink} href="/">
+            <img
+                src="/campfirelogo512.png"
+                alt="campfire logo"
+                style={{
+                  width: "1.75rem",
+                  height: "1.75rem",
+                  objectFit: "contain",
+                  verticalAlign: "middle",
+                  marginRight: "0.35rem",
+                }}
+              />
               GatheRound
             </Link>
           </div>

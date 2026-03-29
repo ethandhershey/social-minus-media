@@ -33,6 +33,17 @@ export default function ProfilePage() {
     <div className={pageStyles.page}>
       <header className={pageStyles.header}>
         <Link className={pageStyles.brand} href="/">
+        <img
+            src="/campfirelogo512.png"
+            alt="campfire logo"
+            style={{
+              width: "1.75rem",
+              height: "1.75rem",
+              objectFit: "contain",
+              verticalAlign: "middle",
+              marginRight: "0.35rem",
+            }}
+          />
           GatheRound
         </Link>
         <nav className={pageStyles.nav}>

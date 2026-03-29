@@ -1,0 +1,85 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+
+  <!-- Gradients -->
+  <defs>
+    <linearGradient id="bgGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#123b2c"/>
+      <stop offset="70%" stop-color="#1f5a3f"/>
+      <stop offset="100%" stop-color="#f7e7c9"/>
+    </linearGradient>
+
+    <radialGradient id="flameInner" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#ffeaa0"/>
+      <stop offset="60%" stop-color="#ffb85c"/>
+      <stop offset="100%" stop-color="#ff8a7a"/>
+    </radialGradient>
+
+    <linearGradient id="logGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#7a4b2a"/>
+      <stop offset="100%" stop-color="#5a341c"/>
+    </linearGradient>
+
+    <radialGradient id="logEndGrad" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#f3d2a4"/>
+      <stop offset="100%" stop-color="#d9a870"/>
+    </radialGradient>
+
+    <radialGradient id="groundGlow" cx="50%" cy="70%" r="45%">
+      <stop offset="0%" stop-color="#f8e0b5" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#f8e0b5" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Green gradient background (transparent canvas preserved) -->
+  <rect x="0" y="0" width="512" height="512" fill="url(#bgGrad)" />
+
+  <!-- Ground glow -->
+  <ellipse cx="256" cy="330" rx="190" ry="80" fill="url(#groundGlow)"/>
+
+  <!-- Back log -->
+  <g transform="translate(256,340) rotate(-25) scale(1.45)">
+    <rect x="-120" y="-22" width="240" height="44" rx="22" fill="url(#logGrad)"/>
+    <circle cx="-120" cy="0" r="22" fill="url(#logEndGrad)"/>
+    <circle cx="120" cy="0" r="22" fill="url(#logEndGrad)"/>
+  </g>
+
+  <!-- Front log -->
+  <g transform="translate(256,340) rotate(25) scale(1.45)">
+    <rect x="-120" y="-22" width="240" height="44" rx="22" fill="url(#logGrad)"/>
+    <circle cx="-120" cy="0" r="22" fill="url(#logEndGrad)"/>
+    <circle cx="120" cy="0" r="22" fill="url(#logEndGrad)"/>
+  </g>
+
+  <!-- Flame -->
+  <g transform="translate(256,185) scale(1.55,1.35) translate(-256,-240)">
+    <path
+      d="M256 140
+         C 220 185, 200 225, 200 260
+         C 200 315, 235 360, 256 380
+         C 277 360, 312 315, 312 260
+         C 312 225, 292 185, 256 140 Z"
+      fill="url(#flameInner)"/>
+
+    <path
+      d="M238 180
+         C 220 205, 215 230, 218 255
+         C 222 285, 235 310, 248 322
+         C 255 310, 262 285, 262 255
+         C 262 230, 252 205, 238 180 Z"
+      fill="#ffe9a8"/>
+
+    <path
+      d="M274 185
+         C 260 205, 255 230, 258 252
+         C 262 280, 272 305, 285 318
+         C 292 305, 298 280, 298 252
+         C 298 230, 288 205, 274 185 Z"
+      fill="#ffd08a"/>
+  </g>
+
+  <!-- Sparks (nudged up slightly more) -->
+  <circle cx="230" cy="55" r="8" fill="#ffeaa0"/>
+  <rect x="270" y="45" width="14" height="14" rx="3" ry="3" fill="#ffeaa0" transform="rotate(45 277 52)"/>
+  <circle cx="255" cy="25" r="6" fill="#ffeaa0"/>
+
+</svg>

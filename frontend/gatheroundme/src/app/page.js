@@ -5,7 +5,19 @@ export default function Home() {
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <span className={styles.brand}>GatheRound</span>
+        <span className={styles.brand}>
+        <img
+                src="/campfirelogo512.png"
+                alt="campfire logo"
+                style={{
+                  width: "1.75rem",
+                  height: "1.75rem",
+                  objectFit: "contain",
+                  verticalAlign: "middle",
+                  marginRight: "0.35rem",
+                }}
+              />
+          GatheRound</span>
         <nav className={styles.nav}>
           <Link className={styles.btnGhost} href="/login">
             Log in
