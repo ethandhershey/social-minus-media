@@ -9,6 +9,7 @@ use clap::{Parser, Subcommand};
 use infra::{
     auth::jwt_validator::JwtTokenValidator,
     entitlment::ConfigEntitlementService,
+    interests::LlmInterestsService,
     mail::ResendMailClient,
     postgres::{
         event_repo::PgEventRepository, product_repo::PgProductRepository,
@@ -116,6 +117,11 @@ async fn main() -> Result<()> {
 
     let entitlment = ConfigEntitlementService::new(config.tiers.into());
 
+    let interests = LlmInterestsService::new(
+        config.llm.interests_summary_model,
+        config.llm.interests_embed_model,
+    );
+
     // ── State ────────────────────────────────────────────────────────────────
     #[derive(Clone)]
     struct Services;
@@ -130,16 +136,12 @@ async fn main() -> Result<()> {
         #[cfg(not(feature = "fake-ai"))]
         type Llm = infra::llm::SimpleLlmClient;
         #[cfg(feature = "fake-ai")]
-        type Ai = domain::test_utils::fake_ai_service::FakeAiService;
+        type Llm = domain::test_utils::fake_ai_service::FakeAiService;
+        type Interests = LlmInterestsService;
         type Billing = StripeClient;
         type Mail = ResendMailClient;
         type Entitlement = ConfigEntitlementService;
     }
-
-    let interests_config = api::state::InterestsConfig {
-        summary_model: config.llm.interests_summary_model,
-        embed_model: config.llm.interests_embed_model,
-    };
 
     let state = AppState::<Services>::new(
         validator,
@@ -149,10 +151,10 @@ async fn main() -> Result<()> {
         rsvp_repo,
         user_interests_repo,
         ai,
+        interests,
         stripe,
         mail,
         entitlment,
-        interests_config,
     );
 
     // ── Router ───────────────────────────────────────────────────────────────

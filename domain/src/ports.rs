@@ -6,6 +6,7 @@ use crate::{
     user::{AuthUser, BillingEvent, Tier, User},
     user_interests::UserInterests,
 };
+use serde_json::Value;
 use uuid::Uuid;
 
 #[trait_variant::make(Send)]
@@ -19,7 +20,12 @@ pub trait UserRepository: Send + Sync {
     async fn find_by_sub(&self, user_sub: &str) -> Result<User, DomainError>;
     async fn upsert(&self, user: &AuthUser) -> Result<User, DomainError>;
     async fn find_by_billing_customer_id(&self, customer_id: &str) -> Result<User, DomainError>;
-    async fn find_nearby(&self, lat: f64, lon: f64, radius_meters: f64) -> Result<Vec<User>, DomainError>;
+    async fn find_nearby(
+        &self,
+        lat: f64,
+        lon: f64,
+        radius_meters: f64,
+    ) -> Result<Vec<User>, DomainError>;
     async fn update_subscription(
         &self,
         user_id: Uuid,
@@ -108,6 +114,22 @@ pub trait RsvpRepository: Send + Sync {
 pub trait UserInterestsRepository: Send + Sync {
     async fn find_by_user(&self, user_id: Uuid) -> Result<Option<UserInterests>, DomainError>;
     async fn upsert(&self, interests: &UserInterests) -> Result<UserInterests, DomainError>;
+}
+
+#[trait_variant::make(Send)]
+pub trait InterestsService: Send + Sync {
+    async fn get_interests(
+        &self,
+        repo: &impl UserInterestsRepository,
+        user_id: Uuid,
+    ) -> Result<Option<UserInterests>, DomainError>;
+    async fn update_interests(
+        &self,
+        repo: &impl UserInterestsRepository,
+        llm: &impl LlmService,
+        user_id: Uuid,
+        messages: Value,
+    ) -> Result<UserInterests, DomainError>;
 }
 
 #[trait_variant::make(Send)]

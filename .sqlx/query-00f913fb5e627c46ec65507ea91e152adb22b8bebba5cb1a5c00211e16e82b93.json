@@ -1,0 +1,84 @@
+{
+  "db_name": "PostgreSQL",
+  "query": "INSERT INTO events (id, host_id, title, description, address, latitude, longitude, start_time, max_capacity)\n               VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)\n               ON CONFLICT(id) DO UPDATE SET\n                   title        = EXCLUDED.title,\n                   description  = EXCLUDED.description,\n                   address      = EXCLUDED.address,\n                   latitude     = EXCLUDED.latitude,\n                   longitude    = EXCLUDED.longitude,\n                   start_time   = EXCLUDED.start_time,\n                   max_capacity = EXCLUDED.max_capacity\n               RETURNING id          as \"id: Uuid\",\n                         host_id     as \"host_id: Uuid\",\n                         title,\n                         description,\n                         address,\n                         latitude,\n                         longitude,\n                         start_time  as \"start_time: time::OffsetDateTime\",\n                         max_capacity,\n                         created_at  as \"created_at: time::OffsetDateTime\"",
+  "describe": {
+    "columns": [
+      {
+        "ordinal": 0,
+        "name": "id: Uuid",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 1,
+        "name": "host_id: Uuid",
+        "type_info": "Uuid"
+      },
+      {
+        "ordinal": 2,
+        "name": "title",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 3,
+        "name": "description",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 4,
+        "name": "address",
+        "type_info": "Text"
+      },
+      {
+        "ordinal": 5,
+        "name": "latitude",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 6,
+        "name": "longitude",
+        "type_info": "Float8"
+      },
+      {
+        "ordinal": 7,
+        "name": "start_time: time::OffsetDateTime",
+        "type_info": "Timestamptz"
+      },
+      {
+        "ordinal": 8,
+        "name": "max_capacity",
+        "type_info": "Int4"
+      },
+      {
+        "ordinal": 9,
+        "name": "created_at: time::OffsetDateTime",
+        "type_info": "Timestamptz"
+      }
+    ],
+    "parameters": {
+      "Left": [
+        "Uuid",
+        "Uuid",
+        "Text",
+        "Text",
+        "Text",
+        "Float8",
+        "Float8",
+        "Timestamptz",
+        "Int4"
+      ]
+    },
+    "nullable": [
+      false,
+      false,
+      false,
+      true,
+      true,
+      true,
+      true,
+      false,
+      true,
+      false
+    ]
+  },
+  "hash": "00f913fb5e627c46ec65507ea91e152adb22b8bebba5cb1a5c00211e16e82b93"
+}
