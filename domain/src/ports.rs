@@ -25,6 +25,13 @@ pub trait UserRepository: Send + Sync {
         lon: f64,
         radius_meters: f64,
     ) -> Result<Vec<User>, DomainError>;
+    async fn find_nearby_by_interests(
+        &self,
+        lat: f64,
+        lon: f64,
+        radius_meters: f64,
+        embedding: &[f32],
+    ) -> Result<Vec<User>, DomainError>;
     async fn update_subscription(
         &self,
         user_id: Uuid,

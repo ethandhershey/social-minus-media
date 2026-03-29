@@ -80,6 +80,16 @@ impl UserRepository for FakeUserProfileRepository {
         Ok(profile)
     }
 
+    async fn find_nearby_by_interests(
+        &self,
+        _lat: f64,
+        _lon: f64,
+        _radius_meters: f64,
+        _embedding: &[f32],
+    ) -> Result<Vec<User>, DomainError> {
+        Ok(vec![])
+    }
+
     async fn find_nearby(&self, lat: f64, lon: f64, _radius_meters: f64) -> Result<Vec<User>, DomainError> {
         let profiles = self.profiles.read().unwrap();
         Ok(profiles

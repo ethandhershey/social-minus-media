@@ -140,6 +140,49 @@ impl UserRepository for PgUserRepository {
         .map_err(|_| DomainError::Internal(anyhow::anyhow!("failed to query nearby users")))
     }
 
+    async fn find_nearby_by_interests(
+        &self,
+        lat: f64,
+        lon: f64,
+        radius_meters: f64,
+        embedding: &[f32],
+    ) -> Result<Vec<User>, DomainError> {
+        let vec = pgvector::Vector::from(embedding.to_vec());
+        sqlx::query_as!(
+            User,
+            r#"SELECT u.id           as "id: Uuid",
+                      u.sub,
+                      u.email,
+                      u.display_name,
+                      u.avatar_url,
+                      u.bio,
+                      u.city,
+                      u.latitude,
+                      u.longitude,
+                      u.tier          as "tier: Tier",
+                      u.api_usage,
+                      u.storage_usage,
+                      u.billing_customer_id,
+                      u.billing_period_start as "billing_period_start: time::OffsetDateTime",
+                      u.created_at          as "created_at: time::OffsetDateTime",
+                      u.updated_at          as "updated_at: time::OffsetDateTime",
+                      u.archived_at         as "archived_at: time::OffsetDateTime"
+               FROM users u
+               JOIN user_interests ui ON ui.user_id = u.id
+               WHERE u.latitude IS NOT NULL AND u.longitude IS NOT NULL
+                 AND earth_box(ll_to_earth($1, $2), $3) @> ll_to_earth(u.latitude, u.longitude)
+                 AND ui.embedding IS NOT NULL
+               ORDER BY ui.embedding <=> $4"#,
+            lat,
+            lon,
+            radius_meters,
+            vec as pgvector::Vector,
+        )
+        .fetch_all(&self.pool)
+        .await
+        .map_err(|_| DomainError::Internal(anyhow::anyhow!("failed to query nearby users by interests")))
+    }
+
     async fn update_subscription(
         &self,
         user_id: Uuid,
