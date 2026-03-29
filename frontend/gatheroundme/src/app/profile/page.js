@@ -34,7 +34,7 @@ export default function ProfilePage() {
       <header className={pageStyles.header}>
         <Link className={pageStyles.brand} href="/">
         <img
-            src="/campfirelogo512.png"
+            src="/campfirelogo512.PNG"
             alt="campfire logo"
             style={{
               width: "1.75rem",

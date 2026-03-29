@@ -94,7 +94,7 @@ export default function Home() {
       <header className={styles.header}>
         <span className={styles.brand}>
           <img
-            src="/campfirelogo512.png"
+            src="/campfirelogo512.PNG"
             alt="campfire logo"
             style={{
               width: "1.75rem",

@@ -159,7 +159,7 @@ export default function ActivitiesPage() {
           <div className={styles.brand}>
             <Link className={styles.brandLink} href="/">
               <img
-                src="/campfirelogo512.png"
+                src="/campfirelogo512.PNG"
                 alt="campfire logo"
                 style={{
                   width: "1.75rem",
