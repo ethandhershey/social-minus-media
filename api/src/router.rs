@@ -37,6 +37,8 @@ pub fn create_router<S: AppServices>(
     let api = handlers::simple::router(build_id)
         .merge(handlers::user::router())
         .merge(handlers::product::router())
+        .merge(handlers::event::router())
+        .merge(handlers::user_interests::router())
         .merge(handlers::analysis::router())
         .merge(handlers::billing::router());
 

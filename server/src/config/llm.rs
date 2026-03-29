@@ -9,6 +9,14 @@ use std::collections::HashMap;
 #[serde(deny_unknown_fields)]
 pub(super) struct RawLlmConfig {
     providers: HashMap<String, RawProvider>,
+    interests: RawInterestsModels,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RawInterestsModels {
+    summary_model: String,
+    embed_model: String,
 }
 
 #[derive(Deserialize)]
@@ -59,7 +67,12 @@ impl RawLlmConfig {
             }
         }
 
-        Ok(LlmConfig { providers, models })
+        Ok(LlmConfig {
+            providers,
+            models,
+            interests_summary_model: self.interests.summary_model,
+            interests_embed_model: self.interests.embed_model,
+        })
     }
 }
 
@@ -67,4 +80,6 @@ impl RawLlmConfig {
 pub struct LlmConfig {
     pub providers: HashMap<String, Provider>,
     pub models: HashMap<String, ModelConfig>,
+    pub interests_summary_model: String,
+    pub interests_embed_model: String,
 }

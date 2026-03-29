@@ -10,7 +10,13 @@ use infra::{
     auth::jwt_validator::JwtTokenValidator,
     entitlment::ConfigEntitlementService,
     mail::ResendMailClient,
-    sqlite::{product_repo::SqliteProductRepository, user_repo::SqliteUserRepository},
+    postgres::{
+        event_repo::PgEventRepository,
+        product_repo::PgProductRepository,
+        rsvp_repo::PgRsvpRepository,
+        user_interests_repo::PgUserInterestsRepository,
+        user_repo::PgUserRepository,
+    },
     stripe::StripeClient,
 };
 use secrecy::ExposeSecret;
@@ -56,12 +62,12 @@ async fn main() -> Result<()> {
     let listener = TcpListener::bind(config.server.address).await?;
 
     // ── Database ─────────────────────────────────────────────────────────────
-    let pool = infra::sqlite::create(
+    let pool = infra::postgres::create(
         &config.database.url.expose_secret(),
         config.database.max_connections,
     )
     .await?;
-    infra::sqlite::migrate(&pool).await?;
+    infra::postgres::migrate(&pool).await?;
 
     // ── Infra ────────────────────────────────────────────────────────────────
     let auth_client = infra::http::AuthClient::new()?;
@@ -85,8 +91,11 @@ async fn main() -> Result<()> {
     #[cfg(feature = "fake-ai")]
     let ai = domain::test_utils::fake_ai_service::FakeAiService::new();
 
-    let user_repo = SqliteUserRepository::new(pool.clone());
-    let product_repo = SqliteProductRepository::new(pool.clone());
+    let user_repo = PgUserRepository::new(pool.clone());
+    let product_repo = PgProductRepository::new(pool.clone());
+    let event_repo = PgEventRepository::new(pool.clone());
+    let rsvp_repo = PgRsvpRepository::new(pool.clone());
+    let user_interests_repo = PgUserInterestsRepository::new(pool.clone());
 
     let stripe = StripeClient::new(
         http_client.clone(),
@@ -114,8 +123,11 @@ async fn main() -> Result<()> {
 
     impl AppServices for Services {
         type Auth = JwtTokenValidator;
-        type UserRepo = SqliteUserRepository;
-        type ProductRepo = SqliteProductRepository;
+        type UserRepo = PgUserRepository;
+        type ProductRepo = PgProductRepository;
+        type EventRepo = PgEventRepository;
+        type RsvpRepo = PgRsvpRepository;
+        type UserInterestsRepo = PgUserInterestsRepository;
         #[cfg(not(feature = "fake-ai"))]
         type Llm = infra::ai::llm::SimpleLlmClient;
         #[cfg(feature = "fake-ai")]
@@ -125,14 +137,23 @@ async fn main() -> Result<()> {
         type Entitlement = ConfigEntitlementService;
     }
 
+    let interests_config = api::state::InterestsConfig {
+        summary_model: config.llm.interests_summary_model,
+        embed_model: config.llm.interests_embed_model,
+    };
+
     let state = AppState::<Services>::new(
         validator,
         user_repo,
         product_repo,
+        event_repo,
+        rsvp_repo,
+        user_interests_repo,
         ai,
         stripe,
         mail,
         entitlment,
+        interests_config,
     );
 
     // ── Router ───────────────────────────────────────────────────────────────
@@ -179,16 +200,6 @@ pub enum Command {
 pub fn write_default_config() -> Result<()> {
     const DEFAULT_PATH: &str = "config/default.toml";
     const EXAMPLE_PATH: &str = "config/example.toml";
-
-    let check = |path: &str| -> Result<()> {
-        if Path::new(path).exists() {
-            anyhow::bail!("\"{path}\" already exists, not overwriting. No files written.");
-        }
-        Ok(())
-    };
-
-    check(DEFAULT_PATH)?;
-    check(EXAMPLE_PATH)?;
 
     std::fs::create_dir_all("config")?;
     std::fs::write(DEFAULT_PATH, include_str!("../../config/default.toml"))?;

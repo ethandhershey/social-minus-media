@@ -3,19 +3,21 @@ config/local.*
 config/*.local.*
 
 # Custom
-/logs/
+logs/
 
-# SQLite
+# Database
 *.db
 *.db-wal
 *.db-shm
 
+.postgres/
+
 # Environment
 !.env
-/.direnv/
+.direnv/
 
 # Rust
-/target/
+target/
 flamegraph.svg
 perf.data
 perf.data.old
